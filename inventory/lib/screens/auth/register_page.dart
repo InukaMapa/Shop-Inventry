@@ -17,7 +17,17 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
 
   final supabase = Supabase.instance.client;
+
   Future<void> _register() async {
+    if (_emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _nameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all fields')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -26,8 +36,7 @@ class _RegisterPageState extends State<RegisterPage> {
         password: _passwordController.text.trim(),
       );
 
-      final user = authResponse.user; // ✅ USE THIS
-
+      final user = authResponse.user;
       if (user == null) {
         throw 'Registration failed';
       }
@@ -49,87 +58,93 @@ class _RegisterPageState extends State<RegisterPage> {
         SnackBar(content: Text(e.toString())),
       );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
-        title: const Text('Register'),
+        title: const Text('Create Account'),
+        backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Name
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                border: OutlineInputBorder(),
+            // Top Icon
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Email
-            TextField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Password
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Role Dropdown
-            DropdownButtonFormField<String>(
-              initialValue: _selectedRole,
-              items: const [
-                DropdownMenuItem(
-                  value: 'admin',
-                  child: Text('Admin'),
-                ),
-                DropdownMenuItem(
-                  value: 'user',
-                  child: Text('User'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedRole = value!;
-                });
-              },
-              decoration: const InputDecoration(
-                labelText: 'Role',
-                border: OutlineInputBorder(),
+              child: const Icon(
+                Icons.person_add,
+                color: Colors.white,
+                size: 50,
               ),
             ),
 
             const SizedBox(height: 30),
 
-            // Register Button
+            _buildTextField(
+              controller: _nameController,
+              label: 'Full Name',
+              icon: Icons.person,
+            ),
+
+            const SizedBox(height: 16),
+
+            _buildTextField(
+              controller: _emailController,
+              label: 'Email',
+              icon: Icons.email,
+              keyboardType: TextInputType.emailAddress,
+            ),
+
+            const SizedBox(height: 16),
+
+            _buildTextField(
+              controller: _passwordController,
+              label: 'Password',
+              icon: Icons.lock,
+              obscureText: true,
+            ),
+
+            const SizedBox(height: 16),
+
+            DropdownButtonFormField<String>(
+              initialValue: _selectedRole,
+              items: const [
+                DropdownMenuItem(value: 'admin', child: Text('Admin')),
+                DropdownMenuItem(value: 'user', child: Text('User')),
+              ],
+              onChanged: (value) => setState(() => _selectedRole = value!),
+              decoration: InputDecoration(
+                labelText: 'Role',
+                prefixIcon: const Icon(Icons.security),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
             SizedBox(
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
@@ -139,6 +154,27 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscureText = false,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

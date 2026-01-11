@@ -6,7 +6,8 @@ import 'screens/welcome/welcome_page.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
 import 'screens/dashboard/dashboard_page.dart';
-/*import 'screens/computers/computer_list_page.dart';*/
+import 'screens/computers/computer_list_page.dart';
+import 'screens/computers/add_computer_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,7 +30,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       onGenerateRoute: (settings) {
-        switch (settings.name) {
+        switch (settings.name ?? '/') {
           case '/':
             return MaterialPageRoute(
               builder: (_) => const WelcomePage(),
@@ -51,10 +52,15 @@ class MyApp extends StatelessWidget {
               builder: (_) => DashboardPage(role: role),
             );
 
-          /*case '/computers':
+          case '/computers':
             return MaterialPageRoute(
               builder: (_) => const ComputerListPage(),
-            );*/
+            );
+
+          case '/add-computer':
+            return MaterialPageRoute(
+              builder: (_) => const AddComputerPage(),
+            );
 
           default:
             return MaterialPageRoute(
