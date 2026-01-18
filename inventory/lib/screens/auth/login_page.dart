@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../dashboard/main_navigation_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -49,10 +50,11 @@ class _LoginPageState extends State<LoginPage> {
       final role = profile['role'];
 
       if (!mounted) return;
-      Navigator.pushReplacementNamed(
+      Navigator.pushReplacement(
         context,
-        '/dashboard',
-        arguments: role,
+        MaterialPageRoute(
+          builder: (_) => MainNavigationPage(role: role),
+        ),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

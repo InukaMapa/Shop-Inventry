@@ -11,10 +11,14 @@ class DashboardPage extends StatelessWidget {
     final supabase = Supabase.instance.client;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        elevation: 0,
         backgroundColor: Colors.blue,
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -31,41 +35,40 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome Card
+            // 👋 Greeting Card
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 8,
-                  ),
-                ],
+                gradient: const LinearGradient(
+                  colors: [Colors.blue, Colors.blueAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'Welcome 👋',
+                    'Welcome Back 👋',
                     style: TextStyle(
+                      color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Logged in as: ${role ?? 'user'}',
+                    'You are logged in as ${role ?? 'user'}',
                     style: const TextStyle(
+                      color: Colors.white70,
                       fontSize: 16,
-                      color: Colors.grey,
                     ),
                   ),
                 ],
@@ -74,9 +77,9 @@ class DashboardPage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // Menu Section
+            // 📋 Section Title
             const Text(
-              'Menu',
+              'Quick Actions',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -85,62 +88,102 @@ class DashboardPage extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // View Computers Card
-            GestureDetector(
+            // 🖥 Inventory Card
+            _DashboardCard(
+              icon: Icons.computer,
+              title: 'Computer Inventory',
+              subtitle: 'View and manage computers',
+              color: Colors.blue,
               onTap: () {
                 Navigator.pushNamed(context, '/computers');
               },
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(
-                      Icons.computer,
-                      color: Colors.white,
-                      size: 32,
-                    ),
-                    SizedBox(width: 16),
-                    Text(
-                      'View Computers',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
 
             const SizedBox(height: 16),
 
-            // Admin Badge
+            // 🛡 Admin Card
             if (role == 'admin')
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.verified_user, color: Colors.green),
-                    SizedBox(width: 8),
-                    Text(
-                      'Admin Access Enabled',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              _DashboardCard(
+                icon: Icons.admin_panel_settings,
+                title: 'Admin Access',
+                subtitle: 'You have full control',
+                color: Colors.green,
+                onTap: () {},
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 🔹 Reusable Dashboard Card Widget
+class _DashboardCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DashboardCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 30),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16),
           ],
         ),
       ),

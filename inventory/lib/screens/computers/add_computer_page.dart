@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddComputerPage extends StatefulWidget {
@@ -19,7 +21,35 @@ class _AddComputerPageState extends State<AddComputerPage> {
   String _status = 'Available';
   bool _isLoading = false;
 
+  File? _imageFile;
+
   final supabase = Supabase.instance.client;
+  final picker = ImagePicker();
+
+  // 📸 Pick image from gallery
+  Future<void> _pickImage() async {
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _imageFile = File(picked.path);
+      });
+    }
+  }
+
+  // ☁ Upload image to Supabase Storage
+  Future<String?> _uploadImage() async {
+    if (_imageFile == null) return null;
+
+    final fileName = 'computer_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+    await supabase.storage.from('computer-images').upload(
+          fileName,
+          _imageFile!,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    return supabase.storage.from('computer-images').getPublicUrl(fileName);
+  }
 
   Future<void> _addComputer() async {
     if (_assetTagController.text.isEmpty ||
@@ -34,6 +64,8 @@ class _AddComputerPageState extends State<AddComputerPage> {
     setState(() => _isLoading = true);
 
     try {
+      final imageUrl = await _uploadImage();
+
       await supabase.from('computers').insert({
         'asset_tag': _assetTagController.text.trim(),
         'brand': _brandController.text.trim(),
@@ -42,6 +74,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
         'ram': _ramController.text.trim(),
         'storage': _storageController.text.trim(),
         'status': _status,
+        'image_url': imageUrl, // nullable
       });
 
       if (!mounted) return;
@@ -49,7 +82,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
         const SnackBar(content: Text('Computer added successfully')),
       );
 
-      Navigator.pop(context); // go back to list
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
@@ -62,7 +95,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         title: const Text('Add Computer'),
         backgroundColor: Colors.blue,
@@ -71,44 +104,50 @@ class _AddComputerPageState extends State<AddComputerPage> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            _buildTextField(
-              controller: _assetTagController,
-              label: 'Asset Tag *',
-              icon: Icons.tag,
+            // 🖼 Image Picker Card
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: Colors.blueAccent),
+                ),
+                child: _imageFile == null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(Icons.add_a_photo, size: 50, color: Colors.blue),
+                          SizedBox(height: 8),
+                          Text('Add Computer Image'),
+                        ],
+                      )
+                    : ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: Image.file(
+                          _imageFile!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        ),
+                      ),
+              ),
             ),
+
+            const SizedBox(height: 24),
+
+            _field(_assetTagController, 'Asset Tag *', Icons.tag),
+            _field(_brandController, 'Brand *', Icons.business),
+            _field(_modelController, 'Model *', Icons.computer),
+            _field(_processorController, 'Processor', Icons.memory),
+            _field(_ramController, 'RAM', Icons.storage),
+            _field(_storageController, 'Storage', Icons.sd_storage),
+
             const SizedBox(height: 16),
-            _buildTextField(
-              controller: _brandController,
-              label: 'Brand *',
-              icon: Icons.business,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _modelController,
-              label: 'Model *',
-              icon: Icons.computer,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _processorController,
-              label: 'Processor',
-              icon: Icons.memory,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _ramController,
-              label: 'RAM',
-              icon: Icons.storage,
-            ),
-            const SizedBox(height: 16),
-            _buildTextField(
-              controller: _storageController,
-              label: 'Storage',
-              icon: Icons.sd_storage,
-            ),
-            const SizedBox(height: 16),
+
             DropdownButtonFormField<String>(
-              value: _status,
+              initialValue: _status,
               items: const [
                 DropdownMenuItem(value: 'Available', child: Text('Available')),
                 DropdownMenuItem(value: 'In Use', child: Text('In Use')),
@@ -124,22 +163,24 @@ class _AddComputerPageState extends State<AddComputerPage> {
                 ),
               ),
             ),
+
             const SizedBox(height: 30),
+
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _addComputer,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                        'Add Computer',
+                        'Save Computer',
                         style: TextStyle(fontSize: 18),
                       ),
               ),
@@ -150,18 +191,17 @@ class _AddComputerPageState extends State<AddComputerPage> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-  }) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+  Widget _field(TextEditingController controller, String label, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       ),
     );

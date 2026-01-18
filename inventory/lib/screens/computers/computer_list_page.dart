@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'computer_details_page.dart';
+
 class ComputerListPage extends StatefulWidget {
   const ComputerListPage({super.key});
 
@@ -22,7 +24,7 @@ class _ComputerListPageState extends State<ComputerListPage> {
     _fetchComputers();
   }
 
-  // 🔹 Get user role
+  // 🔹 Load user role
   Future<void> _loadUserRole() async {
     try {
       final user = supabase.auth.currentUser;
@@ -35,7 +37,7 @@ class _ComputerListPageState extends State<ComputerListPage> {
           .maybeSingle();
 
       if (profile != null && profile['role'] == 'admin') {
-        setState(() => _isAdmin = true);
+        if (mounted) setState(() => _isAdmin = true);
       }
     } catch (_) {}
   }
@@ -48,14 +50,16 @@ class _ComputerListPageState extends State<ComputerListPage> {
           .select()
           .order('created_at', ascending: false);
 
+      if (!mounted) return;
       setState(() {
         _computers = List<Map<String, dynamic>>.from(data);
         _isLoading = false;
       });
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading computers')),
+        const SnackBar(content: Text('Failed to load computers')),
       );
     }
   }
@@ -75,13 +79,13 @@ class _ComputerListPageState extends State<ComputerListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
+      backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
         title: const Text('Computer Inventory'),
         backgroundColor: Colors.blue,
       ),
 
-      // ➕ Add button (Admin only)
+      // ➕ Add (Admin only)
       floatingActionButton: _isAdmin
           ? FloatingActionButton(
               backgroundColor: Colors.blue,
@@ -98,7 +102,7 @@ class _ComputerListPageState extends State<ComputerListPage> {
           : _computers.isEmpty
               ? const Center(
                   child: Text(
-                    'No computers found',
+                    'No computers available',
                     style: TextStyle(fontSize: 16),
                   ),
                 )
@@ -107,26 +111,77 @@ class _ComputerListPageState extends State<ComputerListPage> {
                   itemCount: _computers.length,
                   itemBuilder: (context, index) {
                     final computer = _computers[index];
+                    final imageUrl = computer['image_url'];
 
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 4,
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        leading: const Icon(Icons.computer, color: Colors.blue),
-                        title: Text(
-                          computer['asset_tag'] ?? 'No Asset Tag',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ComputerDetailsPage(computer: computer),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        subtitle: Text(
-                          '${computer['brand']} • ${computer['status']}',
-                        ),
+                        child: Row(
+                          children: [
+                            // 🖼 Image Thumbnail
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: imageUrl != null
+                                  ? Image.network(
+                                      imageUrl,
+                                      width: 70,
+                                      height: 70,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          _imagePlaceholder(),
+                                    )
+                                  : _imagePlaceholder(),
+                            ),
 
-                        // ❌ Delete (Admin only)
-                        trailing: _isAdmin
-                            ? IconButton(
+                            const SizedBox(width: 16),
+
+                            // 📋 Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    computer['brand'] ?? 'Unknown Brand',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    computer['asset_tag'] ?? 'No Asset Tag',
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  _statusChip(computer['status']),
+                                ],
+                              ),
+                            ),
+
+                            // ❌ Delete (Admin)
+                            if (_isAdmin)
+                              IconButton(
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
@@ -156,12 +211,53 @@ class _ComputerListPageState extends State<ComputerListPage> {
                                     ),
                                   );
                                 },
-                              )
-                            : null,
+                              ),
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
+    );
+  }
+
+  // 🖼 Placeholder
+  Widget _imagePlaceholder() {
+    return Container(
+      width: 70,
+      height: 70,
+      color: Colors.grey.shade200,
+      child: const Icon(Icons.computer, color: Colors.grey),
+    );
+  }
+
+  // 🏷 Status Chip
+  Widget _statusChip(String? status) {
+    Color color;
+    switch (status) {
+      case 'Available':
+        color = Colors.green;
+        break;
+      case 'In Use':
+        color = Colors.orange;
+        break;
+      case 'Maintenance':
+        color = Colors.red;
+        break;
+      default:
+        color = Colors.grey;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        status ?? 'Unknown',
+        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+      ),
     );
   }
 }
