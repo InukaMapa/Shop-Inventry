@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../computers/computer_list_page.dart';
 import 'dashboard_page.dart';
 import '../profile/profile_page.dart';
 import '../cart/cart_page.dart';
 import '../orders/user_orders_page.dart';
+import '../categories/categories_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
   final String? role;
@@ -19,16 +19,28 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   int _currentIndex = 0;
 
-  late final List<Widget> _pages;
+  List<Widget> _pages = [];
 
   @override
   void initState() {
     super.initState();
+    _initializePages();
+  }
+
+  @override
+  void didUpdateWidget(covariant MainNavigationPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.role != widget.role) {
+      _initializePages();
+    }
+  }
+
+  void _initializePages() {
     final isAdmin = widget.role == 'admin';
     if (isAdmin) {
       _pages = [
         DashboardPage(role: widget.role),
-        const ComputerListPage(), // Dedicated Items page in navigation
+        const CategoriesPage(), 
         const ProfilePage(),
       ];
     } else {
@@ -95,7 +107,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               destinations: [
                 _navItem(Icons.dashboard_outlined, Icons.dashboard_rounded, 'Home', theme),
                 if (widget.role == 'admin')
-                  _navItem(Icons.inventory_2_outlined, Icons.inventory_2_rounded, 'Items', theme),
+                  _navItem(Icons.category_outlined, Icons.category_rounded, 'Categories', theme),
                 if (widget.role != 'admin') ...[
                   _navItem(Icons.shopping_basket_outlined, Icons.shopping_basket_rounded, 'Cart', theme),
                   _navItem(Icons.receipt_long_outlined, Icons.receipt_long_rounded, 'Orders', theme),

@@ -57,34 +57,50 @@ class _WelcomePageState extends State<WelcomePage> {
                   
                   // 🚀 Logo / Icon
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: 100,
+                    height: 100,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
                       ],
                     ),
-                    child: const Icon(Icons.bolt_rounded, size: 48, color: Colors.white),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(28),
+                      child: Image.asset(
+                        'assets/images/tech_zone_logo.png', 
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)]),
+                          ),
+                          child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 48),
+                        ),
+                      ),
+                    ),
                   ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.5, 0.5)),
 
                   const SizedBox(height: 40),
 
                   // ✍️ Typography
-                  Text(
-                    'Precision\nInventory.',
-                    style: GoogleFonts.outfit(
-                      fontSize: 48,
-                      fontWeight: FontWeight.w900,
-                      height: 1.1,
-                      letterSpacing: -2,
-                      color: theme.colorScheme.onSurface,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        'Tech\nZone.',
+                        style: GoogleFonts.outfit(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          height: 1.1,
+                          letterSpacing: -2,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: Icon(Icons.shopping_bag_rounded, size: 40, color: theme.colorScheme.primary.withOpacity(0.5)),
+                      ),
+                    ],
                   ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
 
                   const SizedBox(height: 16),

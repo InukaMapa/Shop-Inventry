@@ -114,19 +114,67 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 16),
-                ...order.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.computer_rounded, size: 18, color: theme.colorScheme.primary),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text('${item['brand']} ${item['model']}', style: const TextStyle(fontWeight: FontWeight.w500)),
-                      ),
-                      const Text('x1', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                )),
+                ...order.items.map((item) {
+                  final qty = item['quantity'] ?? 1;
+                  final priceStr = item['processor']?.toString() ?? '0';
+                  final price = double.tryParse(priceStr.replaceAll(',', '')) ?? 0;
+                  final subTotal = price * qty;
+                  final imgUrl = item['image_url'];
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      children: [
+                        // 📦 Small Thumbnail
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary.withOpacity(0.05),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: imgUrl != null && imgUrl.isNotEmpty
+                              ? Image.network(imgUrl, fit: BoxFit.cover)
+                              : Icon(Icons.dns_rounded, size: 20, color: theme.colorScheme.primary.withAlpha(100)),
+                        ),
+                        const SizedBox(width: 12),
+                        
+                        // 🏷 Name & Subtotal
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                item['brand'] ?? 'Asset',
+                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: -0.2),
+                              ),
+                              Text(
+                                'Rs. ${price.toStringAsFixed(0)} each',
+                                style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // 🔢 Qty & Tot
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'x$qty',
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                            ),
+                            Text(
+                              'Rs. ${subTotal.toStringAsFixed(0)}',
+                              style: TextStyle(fontWeight: FontWeight.w800, color: theme.colorScheme.primary, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }),
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 16),

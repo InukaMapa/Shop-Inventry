@@ -3,16 +3,24 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/cart_provider.dart';
 
-class ComputerDetailsPage extends StatelessWidget {
+class ComputerDetailsPage extends StatefulWidget {
   final Map<String, dynamic> computer;
 
   const ComputerDetailsPage({super.key, required this.computer});
 
   @override
+  State<ComputerDetailsPage> createState() => _ComputerDetailsPageState();
+}
+
+class _ComputerDetailsPageState extends State<ComputerDetailsPage> {
+  int _quantity = 1;
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final imageUrl = computer['image_url'];
-    final status = computer['status'] ?? 'Unknown';
+    final imageUrl = widget.computer['image_url'];
+    final status = widget.computer['status'] ?? 'Unknown';
+    final maxQty = int.tryParse(widget.computer['ram']?.toString() ?? '1') ?? 1;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -36,16 +44,18 @@ class ComputerDetailsPage extends StatelessWidget {
                   ),
                 ),
                 flexibleSpace: FlexibleSpaceBar(
+                  stretchModes: const [StretchMode.zoomBackground],
                   background: Hero(
-                    tag: 'computer_img_${computer['id']}',
+                    tag: 'computer_img_${widget.computer['id']}',
                     child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade50,
-                        image: imageUrl != null
-                            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-                            : null,
-                      ),
-                      child: imageUrl == null ? Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)) : null,
+                      color: Colors.grey.shade50,
+                      child: (imageUrl != null && imageUrl.toString().isNotEmpty)
+                          ? Image.network(
+                              imageUrl, 
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)),
+                            )
+                          : Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)),
                     ),
                   ),
                 ),
@@ -66,9 +76,9 @@ class ComputerDetailsPage extends StatelessWidget {
                           children: [
                             _statusChip(status),
                             Text(
-                              'Rs. ${computer['processor'] ?? '0'}',
+                              'Rs. ${widget.computer['processor'] ?? '0'}',
                               style: GoogleFonts.outfit(
-                                fontSize: 24,
+                                fontSize: 28,
                                 fontWeight: FontWeight.w900,
                                 color: theme.colorScheme.primary,
                               ),
@@ -77,49 +87,54 @@ class ComputerDetailsPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          computer['brand'] ?? 'Premium Asset',
+                          widget.computer['brand'] ?? 'Premium Asset',
                           style: GoogleFonts.outfit(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Hardware Model & ID: ${computer['model'] ?? 'N/A'}',
+                          'Hardware Model & ID: ${widget.computer['model'] ?? 'N/A'}',
                           style: TextStyle(color: Colors.grey.shade500, fontSize: 16, fontWeight: FontWeight.w600),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 48),
                         
+                        // 📦 Quantity Selector Section
                         Text(
-                          'Key Specifications',
+                          'Select Quantity',
                           style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5),
                         ),
                         const SizedBox(height: 20),
-                        
-                        // 🛠 Grid of Specs
-                        GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 2.2,
-                          children: [
-                            _specTile(Icons.memory_rounded, 'RAM / Cap', '${computer['ram'] ?? '0'} Units'),
-                            _specTile(Icons.storage_rounded, 'Type', computer['storage'] ?? 'N/A'),
-                            _specTile(Icons.calendar_today_rounded, 'Added', 'Recently'),
-                            _specTile(Icons.verified_user_rounded, 'Warranty', 'Standard'),
-                          ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.grey.shade100),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  _qtyButton(Icons.remove_rounded, () {
+                                    if (_quantity > 1) setState(() => _quantity--);
+                                  }),
+                                  const SizedBox(width: 24),
+                                  Text(
+                                    '$_quantity',
+                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                                  ),
+                                  const SizedBox(width: 24),
+                                  _qtyButton(Icons.add_rounded, () {
+                                    if (_quantity < maxQty) setState(() => _quantity++);
+                                  }),
+                                ],
+                              ),
+                              const SizedBox.shrink(),
+                            ],
+                          ),
                         ),
                         
-                        const SizedBox(height: 32),
-                        Text(
-                          'Product Overview',
-                          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w800, letterSpacing: -0.5),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'This high-performance unit provides professional-grade reliability for demanding workloads. Built with precision and efficiency in mind, it represents the pinnacle of modern enterprise computing equipment.',
-                          style: TextStyle(fontSize: 16, color: Colors.blueGrey.shade600, height: 1.6),
-                        ),
-                        const SizedBox(height: 120), // Spacing for bottom button
+                        const SizedBox(height: 180), // Spacing for bottom button
                       ],
                     ),
                   ),
@@ -144,17 +159,23 @@ class ComputerDetailsPage extends StatelessWidget {
                   shadowColor: theme.colorScheme.primary.withOpacity(0.4),
                 ),
                 onPressed: () {
-                   CartProvider().addToCart(computer);
+                   CartProvider().addToCart(widget.computer, quantity: _quantity);
                    ScaffoldMessenger.of(context).showSnackBar(
-                     SnackBar(content: const Text('Added to tracklist!'), behavior: SnackBarBehavior.floating, backgroundColor: theme.colorScheme.primary),
+                     SnackBar(
+                        content: Text('Added $_quantity to tracklist!'), 
+                        behavior: SnackBarBehavior.floating, 
+                        backgroundColor: theme.colorScheme.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
                    );
+                   Navigator.pop(context);
                 },
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(Icons.add_shopping_cart_rounded),
                     SizedBox(width: 12),
-                    Text('Reserve Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                    Text('Add to Tracklist', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
                   ],
                 ),
               ),
@@ -165,33 +186,18 @@ class ComputerDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _specTile(IconData icon, String label, String value) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: Colors.black, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.w700)),
-                Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800), overflow: TextOverflow.ellipsis),
-              ],
-            ),
-          ),
-        ],
+  Widget _qtyButton(IconData icon, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        ),
+        child: Icon(icon, size: 20),
       ),
     );
   }

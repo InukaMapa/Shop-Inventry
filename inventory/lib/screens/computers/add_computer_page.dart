@@ -5,6 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../services/database_service.dart';
+
 class AddComputerPage extends StatefulWidget {
   final Map<String, dynamic>? computer;
   const AddComputerPage({super.key, this.computer});
@@ -26,7 +28,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
   String? _existingImageUrl;
   File? _imageFile;
 
-  final supabase = Supabase.instance.client;
+  final DatabaseService _dbService = DatabaseService();
   final picker = ImagePicker();
 
   @override
@@ -53,6 +55,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
     if (_imageFile == null) return null;
     final fileName = 'asset_${DateTime.now().millisecondsSinceEpoch}.jpg';
     try {
+      final supabase = Supabase.instance.client;
       await supabase.storage.from('computer-images').upload(fileName, _imageFile!, fileOptions: const FileOptions(upsert: true));
       return supabase.storage.from('computer-images').getPublicUrl(fileName);
     } catch (e) {
@@ -81,9 +84,9 @@ class _AddComputerPageState extends State<AddComputerPage> {
       };
 
       if (widget.computer != null) {
-        await supabase.from('computers').update(data).eq('id', widget.computer!['id']);
+        await _dbService.upsertComputer(data, id: widget.computer!['id']);
       } else {
-        await supabase.from('computers').insert(data);
+        await _dbService.upsertComputer(data);
       }
 
       if (!mounted) return;

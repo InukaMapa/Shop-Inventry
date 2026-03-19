@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../computers/computer_list_page.dart';
+import '../reports/reports_page.dart';
 
 class DashboardPage extends StatefulWidget {
   final String? role;
@@ -19,52 +20,74 @@ class _DashboardPageState extends State<DashboardPage> {
   double _totalRevenue = 0;
   int _totalOrders = 0;
   bool _isLowStock = false;
+  String? _currentRole;
+  List<Map<String, dynamic>> _allAssets = [];
 
   @override
   void initState() {
     super.initState();
+    _currentRole = widget.role;
     _fetchStats();
   }
 
   Future<void> _fetchStats() async {
-    if (widget.role != 'admin') {
-      setState(() => _isLoading = false);
-      return;
-    }
+    setState(() => _isLoading = true);
 
     try {
-      final assetsResponse = await supabase.from('computers').select();
-      final assets = List<Map<String, dynamic>>.from(assetsResponse);
-      final ordersResponse = await supabase.from('orders').select();
-      final orders = List<Map<String, dynamic>>.from(ordersResponse);
-
-      if (mounted) {
-        setState(() {
-          int availableQty = 0;
-          double totalRev = 0;
-
-          for (var a in assets) {
-            final status = (a['status'] ?? '').toString();
-            final qty = int.tryParse(a['ram']?.toString() ?? '0') ?? 0;
-            if (status == 'Available' || status == 'In Use') {
-              availableQty += qty;
-            }
-          }
-
-          for (var o in orders) {
-            final val = o['total_amount'];
-            if (val != null) {
-              totalRev += double.tryParse(val.toString()) ?? 0.0;
-            }
-          }
-          
-          _availableAssets = availableQty;
-          _totalOrders = orders.length;
-          _totalRevenue = totalRev;
-          _isLowStock = _availableAssets < 5;
-          _isLoading = false;
-        });
+      // 1. Determine the actual user role first
+      String activeRole = _currentRole ?? widget.role ?? 'user';
+      final userId = supabase.auth.currentUser?.id;
+      
+      if (userId != null) {
+        final profile = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle();
+        if (profile != null) {
+          activeRole = profile['role']?.toString().toLowerCase() == 'admin' ? 'admin' : 'user';
+          if (mounted) setState(() => _currentRole = activeRole);
+        }
       }
+
+      // 2. Fetch data based on the determined role
+      final results = await Future.wait([
+        supabase.from('computers').select().order('created_at', ascending: false),
+        supabase.from('orders').select(), // Always fetch orders to be sure, or filter if needed
+      ]);
+
+      if (!mounted) return;
+
+      final assets = List<Map<String, dynamic>>.from(results[0]);
+      final orders = List<Map<String, dynamic>>.from(results[1]);
+
+      setState(() {
+        _allAssets = assets;
+        _totalOrders = orders.length;
+        
+        // Use unique product count (rows) for 'Total Products'
+        _availableAssets = assets.length;
+
+        double totalRev = 0;
+        // Calculate total revenue from orders
+        for (var o in orders) {
+          final amt = o['total_amount'];
+          if (amt != null) {
+            if (amt is num) {
+              totalRev += amt.toDouble();
+            } else {
+              final cleaned = amt.toString().replaceAll(RegExp(r'[^0-9.]'), '');
+              totalRev += double.tryParse(cleaned) ?? 0.0;
+            }
+          }
+        }
+        _totalRevenue = totalRev;
+        
+        // Sum individual units for internal info if needed
+        int totalUnits = 0;
+        for (var a in assets) {
+          final cleanQty = a['ram']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '0';
+          totalUnits += int.tryParse(cleanQty) ?? 0;
+        }
+        _isLowStock = totalUnits < 10;
+        _isLoading = false;
+      });
     } catch (e) {
       debugPrint('Dashboard stats fetch error: $e');
       if (mounted) setState(() => _isLoading = false);
@@ -74,9 +97,9 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bool isAdmin = widget.role == 'admin';
+    final bool isAdmin = (_currentRole ?? widget.role) == 'admin';
 
-    if (_isLoading && isAdmin) {
+    if (_isLoading) {
       return Scaffold(
         backgroundColor: theme.colorScheme.surface,
         body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
@@ -154,22 +177,28 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor: theme.colorScheme.surface.withOpacity(0.9),
       scrolledUnderElevation: 0,
       centerTitle: false,
-      title: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              isAdmin ? 'DASHBOARD' : 'USER HUB',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 2),
-            ),
-            Text(
-              isAdmin ? 'Tech Zone Pro' : 'Tech Zone',
-              style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 24),
-            ),
-          ],
-        ),
+      title: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset('assets/images/tech_zone_logo.png', width: 44, height: 44, fit: BoxFit.cover),
+          ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                isAdmin ? 'DASHBOARD' : 'USER HUB',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 2),
+              ),
+              Text(
+                isAdmin ? 'Tech Zone Pro' : 'Tech Zone',
+                style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 24),
+              ),
+            ],
+          ),
+        ],
       ),
       actions: [
         Container(
@@ -184,99 +213,6 @@ class _DashboardPageState extends State<DashboardPage> {
             },
           ),
         ).animate().fadeIn(duration: 600.ms).scale(),
-      ],
-    );
-  }
-
-  Widget _buildAdminLayout(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 16),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: [
-              _StatCard(
-                label: 'Revenue',
-                value: 'Rs. ${_totalRevenue > 1000 ? '${(_totalRevenue / 1000).toStringAsFixed(1)}k' : _totalRevenue.toStringAsFixed(0)}',
-                icon: Icons.auto_graph_rounded,
-                color: theme.colorScheme.primary,
-                delayMs: 100,
-              ),
-              _StatCard(
-                label: 'Orders',
-                value: _totalOrders.toString(),
-                icon: Icons.shopping_basket_rounded,
-                color: Colors.teal,
-                delayMs: 200,
-              ),
-              _StatCard(
-                label: 'In Stock',
-                value: _availableAssets.toString(),
-                icon: Icons.inventory_2_rounded,
-                color: _isLowStock ? Colors.red : Colors.indigo,
-                delayMs: 300,
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 40),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Text('Operation Center', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
-        ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 20,
-            childAspectRatio: 1.1,
-            children: [
-              _AdminActionTile(
-                title: 'Orders',
-                subtitle: 'Track status',
-                icon: Icons.receipt_long_rounded,
-                color: Colors.blueAccent,
-                onTap: () => Navigator.pushNamed(context, '/orders'),
-                delayMs: 100,
-              ),
-              _AdminActionTile(
-                title: 'Add New',
-                subtitle: 'Create asset',
-                icon: Icons.add_circle_rounded,
-                color: Colors.indigoAccent,
-                onTap: () async {
-                  await Navigator.pushNamed(context, '/add-computer');
-                  _fetchStats();
-                },
-                delayMs: 200,
-              ),
-              _AdminActionTile(
-                title: 'Inventory',
-                subtitle: 'Manage stock',
-                icon: Icons.category_rounded,
-                color: Colors.teal,
-                onTap: () => Navigator.pushNamed(context, '/categories'),
-                delayMs: 300,
-              ),
-              _AdminActionTile(
-                title: 'Analytics',
-                subtitle: 'View growth',
-                icon: Icons.leaderboard_rounded,
-                color: Colors.orange,
-                onTap: () {},
-                delayMs: 400,
-              ),
-            ],
-          ),
-        ),
       ],
     );
   }
@@ -330,9 +266,258 @@ class _DashboardPageState extends State<DashboardPage> {
             delayMs: 700,
           ),
         ),
+        const SizedBox(height: 48),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Explore Collection', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/computers'),
+                child: const Text('View All'),
+              ),
+            ],
+          ),
+        ).animate().fadeIn(delay: 800.ms).slideX(begin: -0.1),
+        const SizedBox(height: 12),
+        if (_allAssets.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(40),
+            child: Center(child: Text('Empty inventory', style: TextStyle(color: Colors.grey))),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: _allAssets.length > 8 ? 8 : _allAssets.length,
+            itemBuilder: (context, index) {
+              final a = _allAssets[index];
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.grey.shade50),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 54, height: 54,
+                      decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+                      child: (a['image_url'] != null && a['image_url'].toString().isNotEmpty) 
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(16), 
+                            child: Image.network(
+                              a['image_url'], 
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, size: 24, color: theme.colorScheme.primary.withOpacity(0.3)),
+                            ),
+                          ) 
+                        : Icon(Icons.dns_rounded, size: 24, color: theme.colorScheme.primary.withOpacity(0.3)),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(a['brand'] ?? 'Premium Tech', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: -0.5)),
+                        const SizedBox(height: 2),
+                        Text('Curated for you', style: TextStyle(color: Colors.grey.shade400, fontSize: 11, fontWeight: FontWeight.w600)),
+                      ],
+                    )),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('Rs. ${a['processor']}', style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.primary, fontSize: 16)),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ).animate().fadeIn(delay: 900.ms),
       ],
     );
   }
+
+  Widget _buildAdminLayout(ThemeData theme) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              _StatCard(
+                label: 'Revenue',
+                value: 'Rs. ${_totalRevenue > 1000 ? '${(_totalRevenue / 1000).toStringAsFixed(1)}k' : _totalRevenue.toStringAsFixed(0)}',
+                icon: Icons.auto_graph_rounded,
+                color: theme.colorScheme.primary,
+                delayMs: 100,
+              ),
+              const SizedBox(width: 12),
+              _StatCard(
+                label: 'Orders',
+                value: _totalOrders.toString(),
+                icon: Icons.shopping_basket_rounded,
+                color: const Color(0xFF10B981),
+                delayMs: 200,
+              ),
+              const SizedBox(width: 12),
+              _StatCard(
+                label: 'Products',
+                value: _availableAssets.toString(),
+                icon: Icons.inventory_2_rounded,
+                color: _isLowStock ? Colors.redAccent : const Color(0xFF6366F1),
+                delayMs: 300,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 48),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text('Operation Center', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+        ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.35,
+            children: [
+              _AdminActionTile(
+                title: 'Orders',
+                subtitle: 'Manage activity',
+                icon: Icons.receipt_long_rounded,
+                color: const Color(0xFF6366F1),
+                onTap: () => Navigator.pushNamed(context, '/orders').then((_) => _fetchStats()),
+                delayMs: 100,
+              ),
+              _AdminActionTile(
+                title: 'Products',
+                subtitle: 'Add/Edit stock',
+                icon: Icons.inventory_2_rounded,
+                color: const Color(0xFF14B8A6),
+                onTap: () async {
+                  await Navigator.pushNamed(context, '/computers');
+                  _fetchStats();
+                },
+                delayMs: 200,
+              ),
+              _AdminActionTile(
+                title: 'New Item',
+                subtitle: 'Quick register',
+                icon: Icons.add_rounded,
+                color: const Color(0xFFF59E0B),
+                onTap: () async {
+                  await Navigator.pushNamed(context, '/add-computer');
+                  _fetchStats();
+                },
+                delayMs: 300,
+              ),
+              _AdminActionTile(
+                title: 'Analytics',
+                subtitle: 'Finance reports',
+                icon: Icons.analytics_rounded,
+                color: const Color(0xFF8B5CF6),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ReportsPage(totalRevenue: _totalRevenue, totalOrders: _totalOrders))),
+                delayMs: 400,
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 48),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               Text('Recent Orders Feed', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+               TextButton(onPressed: () => Navigator.pushNamed(context, '/orders'), child: const Text('Global History')),
+            ],
+          ),
+        ).animate().fadeIn(delay: 500.ms).slideX(begin: -0.1),
+        const SizedBox(height: 12),
+        _buildRecentOrders(theme),
+        const SizedBox(height: 40),
+      ],
+    );
+  }
+
+  Widget _buildRecentOrders(ThemeData theme) {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: supabase.from('orders').select().order('created_at', ascending: false).limit(5),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Padding(
+            padding: EdgeInsets.all(40),
+            child: Center(child: Text('No recent orders activity', style: TextStyle(color: Colors.grey))),
+          );
+        }
+        
+        final recentOrders = snapshot.data!;
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          itemCount: recentOrders.length,
+          itemBuilder: (context, index) {
+            final order = recentOrders[index];
+            final status = order['status'] ?? 'Processing';
+            final amount = (order['total_amount'] as num?)?.toDouble() ?? 0.0;
+            
+            Color statusColor = Colors.orange;
+            if (status == 'Delivered' || status == 'Completed') statusColor = Colors.green;
+            if (status == 'Cancelled') statusColor = Colors.red;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: Colors.grey.shade50),
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(color: statusColor.withOpacity(0.1), shape: BoxShape.circle),
+                    child: Icon(Icons.receipt_rounded, color: statusColor, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Order #${order['id'].toString().substring(0,8)}', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                        Text(status, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                  Text('Rs. ${amount.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.primary)),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+
 }
 
 class _StatCard extends StatelessWidget {
@@ -346,9 +531,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 160,
+      width: 170,
+      height: 170,
       margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
@@ -365,8 +551,11 @@ class _StatCard extends StatelessWidget {
             decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 24),
           ),
-          const SizedBox(height: 20),
-          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
+          const SizedBox(height: 16),
+          Text(value, 
+            maxLines: 1, 
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
           Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blueGrey.shade300)),
         ],
       ),

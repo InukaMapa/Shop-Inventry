@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../services/auth_service.dart';
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -19,7 +21,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
-  final supabase = Supabase.instance.client;
+  final AuthService _authService = AuthService();
 
   Future<void> _register() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty || _nameController.text.isEmpty) {
@@ -32,19 +34,12 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = true);
 
     try {
-      final authResponse = await supabase.auth.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      await _authService.signUp(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _nameController.text.trim(),
+        _selectedRole,
       );
-
-      final user = authResponse.user;
-      if (user == null) throw 'Registration failed';
-
-      await supabase.from('profiles').upsert({
-        'id': user.id,
-        'name': _nameController.text.trim(),
-        'role': _selectedRole,
-      });
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

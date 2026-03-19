@@ -35,13 +35,26 @@ class OrderProvider extends ChangeNotifier {
       final data = List<Map<String, dynamic>>.from(response);
       _orders.clear();
       for (var o in data) {
-        _orders.add(Order(
-          id: 'ORD-${o['id'].toString().substring(0, 8)}',
-          items: List<Map<String, dynamic>>.from(o['items']),
-          total: (o['total_amount'] as num).toDouble(),
-          date: DateTime.parse(o['created_at']),
-          status: o['status'] ?? 'Processing',
-        ));
+        try {
+          final itemsRaw = o['items'];
+          final items = itemsRaw != null ? List<Map<String, dynamic>>.from(itemsRaw) : <Map<String, dynamic>>[];
+          
+          final totalVal = o['total_amount'];
+          double totalAmount = 0;
+          if (totalVal != null) {
+            totalAmount = double.tryParse(totalVal.toString()) ?? 0.0;
+          }
+          
+          _orders.add(Order(
+            id: o['id'].toString().length > 8 ? 'ORD-${o['id'].toString().substring(0, 8)}' : 'ORD-${o['id']}',
+            items: items,
+            total: totalAmount,
+            date: o['created_at'] != null ? DateTime.parse(o['created_at']) : DateTime.now(),
+            status: o['status'] ?? 'Processing',
+          ));
+        } catch (e) {
+          debugPrint('Single order parsing error: $e');
+        }
       }
       notifyListeners();
     } catch (e) {
@@ -77,7 +90,8 @@ class OrderProvider extends ChangeNotifier {
       // 3. Update stock/status in 'computers' table
       for (var item in items) {
         final currentQty = int.tryParse(item['ram']?.toString() ?? '0') ?? 0;
-        final newQty = (currentQty - 1).clamp(0, 999);
+        final orderedQty = item['quantity'] is int ? item['quantity'] : (int.tryParse(item['quantity']?.toString() ?? '1') ?? 1);
+        final newQty = (currentQty - orderedQty).clamp(0, 9999);
         
         await supabase.from('computers').update({
           'status': newQty == 0 ? 'Out of Stock' : 'Available',

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
+import '../../services/database_service.dart';
 
 class OrdersPage extends StatefulWidget {
   const OrdersPage({super.key});
@@ -10,7 +14,7 @@ class OrdersPage extends StatefulWidget {
 }
 
 class _OrdersPageState extends State<OrdersPage> {
-  final supabase = Supabase.instance.client;
+  final DatabaseService _dbService = DatabaseService();
   bool _isLoading = true;
   List<Map<String, dynamic>> _orders = [];
 
@@ -22,17 +26,36 @@ class _OrdersPageState extends State<OrdersPage> {
 
   Future<void> _fetchOrders() async {
     try {
-      final response = await supabase
-          .from('orders')
-          .select()
-          .order('created_at', ascending: false);
+      final response = await _dbService.getOrders();
       
       setState(() {
-        _orders = List<Map<String, dynamic>>.from(response);
+        _orders = response;
         _isLoading = false;
       });
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _updateOrderStatus(dynamic orderId, String status) async {
+    try {
+      await Supabase.instance.client
+          .from('orders')
+          .update({'status': status})
+          .eq('id', orderId);
+      
+      _fetchOrders();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Status updated to $status'), behavior: SnackBarBehavior.floating),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+        );
+      }
     }
   }
 
@@ -43,9 +66,10 @@ class _OrdersPageState extends State<OrdersPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Order Tracking', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: theme.colorScheme.surface,
+        title: Text('Order Tracking', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, letterSpacing: -1)),
+        backgroundColor: Colors.white,
         centerTitle: true,
+        elevation: 0,
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -62,11 +86,17 @@ class _OrdersPageState extends State<OrdersPage> {
                 final orderId = 'ORD-${order['id'].toString().substring(0,8)}';
                 final items = List<Map<String, dynamic>>.from(order['items'] ?? []);
 
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 2,
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
+                  ),
                   child: ExpansionTile(
+                    shape: const RoundedRectangleBorder(side: BorderSide.none),
+                    collapsedShape: const RoundedRectangleBorder(side: BorderSide.none),
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     title: Text(orderId, style: const TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text(dateFormat.format(date), style: const TextStyle(fontSize: 12)),
                     trailing: _buildStatusBadge(status),
@@ -78,17 +108,44 @@ class _OrdersPageState extends State<OrdersPage> {
                           children: [
                             const Text('Items Information', style: TextStyle(fontWeight: FontWeight.bold)),
                             const SizedBox(height: 8),
-                            ...items.map((item) => Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.computer, size: 16),
-                                  const SizedBox(width: 8),
-                                  Expanded(child: Text('${item['brand']} ${item['model']}')),
-                                  const Text('x1'),
-                                ],
-                              ),
-                            )),
+                            ...items.map((item) {
+                              final qty = item['quantity'] ?? 1;
+                              final priceStr = item['processor']?.toString() ?? '0';
+                              final price = double.tryParse(priceStr.replaceAll(',', '')) ?? 0;
+                              final subTotal = price * qty;
+                              final imgUrl = item['image_url'];
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 6),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withOpacity(0.05),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      clipBehavior: Clip.antiAlias,
+                                      child: imgUrl != null && imgUrl.isNotEmpty
+                                          ? Image.network(imgUrl, fit: BoxFit.cover)
+                                          : Icon(Icons.dns_rounded, size: 18, color: theme.colorScheme.primary.withOpacity(0.3)),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(item['brand'] ?? 'Asset', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                          Text('Rs. ${price.toStringAsFixed(0)} x $qty', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                                        ],
+                                      ),
+                                    ),
+                                    Text('Rs. ${subTotal.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+                                  ],
+                                ),
+                              );
+                            }),
                             const Divider(height: 24),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -98,8 +155,29 @@ class _OrdersPageState extends State<OrdersPage> {
                                   style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.primary, fontSize: 18)),
                               ],
                             ),
-                            const SizedBox(height: 8),
-                            Text('User ID: ${order['user_id']}', style: TextStyle(fontSize: 10, color: Colors.grey.shade600)),
+                             const SizedBox(height: 24),
+                             Row(
+                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                               children: [
+                                 const Text('Admin Controls', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey)),
+                                 Wrap(
+                                   spacing: 8,
+                                   children: ['Processing', 'Completed', 'Cancelled'].map((s) {
+                                     final isSelected = status == s;
+                                     return ChoiceChip(
+                                       label: Text(s, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                                       selected: isSelected,
+                                       selectedColor: theme.colorScheme.primary,
+                                       onSelected: (val) {
+                                         if (val) _updateOrderStatus(order['id'], s);
+                                       },
+                                     );
+                                   }).toList(),
+                                 ),
+                               ],
+                             ),
+                             const SizedBox(height: 12),
+                             Text('User DB Reference: ${order['user_id']}', style: TextStyle(fontSize: 9, color: Colors.grey.shade400)),
                           ],
                         ),
                       )

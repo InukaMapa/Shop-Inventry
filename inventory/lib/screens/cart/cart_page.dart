@@ -109,8 +109,15 @@ class _CartPageState extends State<CartPage> {
             height: 80,
             width: 80,
             decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(20)),
-            child: item.computer['image_url'] != null
-                ? ClipRRect(borderRadius: BorderRadius.circular(20), child: Image.network(item.computer['image_url'], fit: BoxFit.cover))
+            child: (item.computer['image_url'] != null && item.computer['image_url'].toString().isNotEmpty)
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20), 
+                    child: Image.network(
+                      item.computer['image_url'], 
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3)),
+                    ),
+                  )
                 : Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3)),
           ),
           const SizedBox(width: 16),
@@ -188,7 +195,13 @@ class _CartPageState extends State<CartPage> {
       backgroundColor: Colors.transparent,
       builder: (context) => _PlaceOrderForm(onSuccess: () {
         setState(() {
-          final items = cart.items.map((e) => e.computer).toList();
+          final List<Map<String, dynamic>> items = cart.items.map((e) {
+            final itemMap = Map<String, dynamic>.from(e.computer);
+            itemMap['quantity'] = e.quantity;
+            itemMap['unit_price'] = e.computer['processor'];
+            return itemMap;
+          }).toList();
+          
           orders.addOrder(items, cart.totalAmount);
           cart.clearCart();
         });

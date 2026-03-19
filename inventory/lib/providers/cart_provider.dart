@@ -26,13 +26,13 @@ class CartProvider extends ChangeNotifier {
     return total;
   }
 
-  void addToCart(Map<String, dynamic> computer) {
+  void addToCart(Map<String, dynamic> computer, {int quantity = 1}) {
     // Check if already in cart
     final index = _items.indexWhere((item) => item.computer['id'] == computer['id']);
     if (index >= 0) {
-      _items[index].quantity++;
+      _items[index].quantity += quantity;
     } else {
-      _items.add(CartItem(computer: computer));
+      _items.add(CartItem(computer: computer, quantity: quantity));
     }
     notifyListeners();
   }

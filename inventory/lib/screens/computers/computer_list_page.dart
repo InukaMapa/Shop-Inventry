@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../services/database_service.dart';
 import 'computer_details_page.dart';
 import 'add_computer_page.dart';
 
@@ -15,7 +16,7 @@ class ComputerListPage extends StatefulWidget {
 }
 
 class _ComputerListPageState extends State<ComputerListPage> {
-  final supabase = Supabase.instance.client;
+  final DatabaseService _dbService = DatabaseService();
 
   bool _isLoading = true;
   bool _isAdmin = false;
@@ -50,10 +51,10 @@ class _ComputerListPageState extends State<ComputerListPage> {
 
   Future<void> _loadUserRole() async {
     try {
-      final user = supabase.auth.currentUser;
+      final user = Supabase.instance.client.auth.currentUser;
       if (user == null) return;
 
-      final profile = await supabase
+      final profile = await Supabase.instance.client
           .from('profiles')
           .select('role')
           .eq('id', user.id)
@@ -67,22 +68,11 @@ class _ComputerListPageState extends State<ComputerListPage> {
 
   Future<void> _fetchComputers() async {
     try {
-      final data = await supabase
-          .from('computers')
-          .select()
-          .order('created_at', ascending: false);
+      final data = await _dbService.getComputers(category: widget.category);
 
       if (!mounted) return;
       setState(() {
         _allComputers = List<Map<String, dynamic>>.from(data);
-        
-        if (widget.category != null) {
-          _allComputers = _allComputers.where((item) {
-            final itemCategory = (item['storage'] ?? '').toString().toLowerCase();
-            return itemCategory == widget.category!.toLowerCase();
-          }).toList();
-        }
-        
         _filteredComputers = _allComputers;
         _isLoading = false;
       });
@@ -97,7 +87,7 @@ class _ComputerListPageState extends State<ComputerListPage> {
 
   Future<void> _deleteComputer(String id) async {
     try {
-      await supabase.from('computers').delete().eq('id', id);
+      await _dbService.deleteComputer(id);
       _fetchComputers();
     } catch (_) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -278,7 +268,11 @@ class _AssetCard extends StatelessWidget {
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: imageUrl != null && imageUrl.toString().isNotEmpty
-                      ? Image.network(imageUrl, fit: BoxFit.cover)
+                      ? Image.network(
+                          imageUrl, 
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3), size: 32),
+                        )
                       : Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3), size: 32),
                 ),
               ),
@@ -295,10 +289,11 @@ class _AssetCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      'Quantity: ${computer['ram'] ?? '0'} Units',
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w600),
-                    ),
+                    if (isAdmin)
+                      Text(
+                        'Quantity: ${computer['ram'] ?? '0'} Units',
+                        style: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.w600),
+                      ),
                     const SizedBox(height: 8),
                      Text(
                       'Rs. ${computer['processor'] ?? '0'}',

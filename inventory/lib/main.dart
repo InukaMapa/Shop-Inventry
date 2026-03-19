@@ -5,13 +5,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/welcome/welcome_page.dart';
 import 'screens/auth/login_page.dart';
 import 'screens/auth/register_page.dart';
-import 'screens/dashboard/dashboard_page.dart';
-import 'screens/computers/computer_list_page.dart';
 import 'screens/computers/add_computer_page.dart';
 import 'screens/orders/orders_page.dart';
 import 'screens/categories/categories_page.dart';
-import 'screens/products/products_page.dart';
-import 'screens/reports/reports_page.dart';
+import 'screens/computers/computer_list_page.dart';
 import 'screens/dashboard/main_navigation_page.dart';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -34,7 +31,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Tech Zone',
+      title: 'TechZone',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -83,6 +80,8 @@ class MyApp extends StatelessWidget {
         if (settings.name == '/register') return MaterialPageRoute(builder: (_) => const RegisterPage());
         if (settings.name == '/orders') return MaterialPageRoute(builder: (_) => const OrdersPage());
         if (settings.name == '/add-computer') return MaterialPageRoute(builder: (_) => const AddComputerPage());
+        if (settings.name == '/computers') return MaterialPageRoute(builder: (_) => const ComputerListPage());
+        if (settings.name == '/categories') return MaterialPageRoute(builder: (_) => const CategoriesPage());
         return null;
       },
     );
@@ -109,10 +108,10 @@ class AuthGate extends StatelessWidget {
           key: ValueKey(session.user.id),
           future: Supabase.instance.client
               .from('profiles')
-              .select()
+              .select('role')
               .eq('id', session.user.id)
               .maybeSingle()
-              .timeout(const Duration(seconds: 10), onTimeout: () => null),
+              .timeout(const Duration(seconds: 15), onTimeout: () => null),
           builder: (context, profileSnapshot) {
             if (profileSnapshot.connectionState == ConnectionState.waiting) {
               return const Scaffold(
@@ -122,8 +121,14 @@ class AuthGate extends StatelessWidget {
               );
             }
             
-            // Fallback to 'user' if profile load fails
-            final role = profileSnapshot.data?['role'] ?? 'user';
+            // Determine role with more priority to profile data
+            String role = 'user';
+            if (profileSnapshot.hasData && profileSnapshot.data != null) {
+              role = profileSnapshot.data!['role']?.toString().toLowerCase() == 'admin' ? 'admin' : 'user';
+            } else if (session.user.userMetadata?['role']?.toString().toLowerCase() == 'admin') {
+              role = 'admin';
+            }
+            
             return MainNavigationPage(role: role);
           },
         );
