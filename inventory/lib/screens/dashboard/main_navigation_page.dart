@@ -46,14 +46,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     final theme = Theme.of(context);
     
     return Scaffold(
+      backgroundColor: Colors.white,
       body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
         transitionBuilder: (Widget child, Animation<double> animation) {
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
               position: Tween<Offset>(
-                begin: const Offset(0.05, 0),
+                begin: const Offset(0.02, 0),
                 end: Offset.zero,
               ).animate(animation),
               child: child,
@@ -65,45 +68,52 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           child: _pages[_currentIndex],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (int index) {
-          setState(() => _currentIndex = index);
-        },
-        elevation: 0,
-        backgroundColor: theme.colorScheme.surface,
-        indicatorColor: theme.colorScheme.primaryContainer,
-        destinations: [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined, color: theme.colorScheme.onSurfaceVariant),
-            selectedIcon: Icon(Icons.dashboard_rounded, color: theme.colorScheme.primary),
-            label: 'Home',
-          ),
-          if (widget.role == 'admin')
-            NavigationDestination(
-              icon: Icon(Icons.inventory_2_outlined, color: theme.colorScheme.onSurfaceVariant),
-              selectedIcon: Icon(Icons.inventory_2_rounded, color: theme.colorScheme.primary),
-              label: 'Items',
-            ),
-          if (widget.role != 'admin') ...[
-            NavigationDestination(
-              icon: Icon(Icons.shopping_cart_outlined, color: theme.colorScheme.onSurfaceVariant),
-              selectedIcon: Icon(Icons.shopping_cart_rounded, color: theme.colorScheme.primary),
-              label: 'Cart',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined, color: theme.colorScheme.onSurfaceVariant),
-              selectedIcon: Icon(Icons.receipt_long_rounded, color: theme.colorScheme.primary),
-              label: 'Orders',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
             ),
           ],
-          NavigationDestination(
-            icon: Icon(Icons.person_outline, color: theme.colorScheme.onSurfaceVariant),
-            selectedIcon: Icon(Icons.person_rounded, color: theme.colorScheme.primary),
-            label: 'Profile',
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: NavigationBar(
+              selectedIndex: _currentIndex,
+              onDestinationSelected: (int index) {
+                setState(() => _currentIndex = index);
+              },
+              elevation: 0,
+              backgroundColor: Colors.transparent,
+              indicatorColor: theme.colorScheme.primary.withOpacity(0.1),
+              height: 64,
+              labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+              destinations: [
+                _navItem(Icons.dashboard_outlined, Icons.dashboard_rounded, 'Home', theme),
+                if (widget.role == 'admin')
+                  _navItem(Icons.inventory_2_outlined, Icons.inventory_2_rounded, 'Items', theme),
+                if (widget.role != 'admin') ...[
+                  _navItem(Icons.shopping_basket_outlined, Icons.shopping_basket_rounded, 'Cart', theme),
+                  _navItem(Icons.receipt_long_outlined, Icons.receipt_long_rounded, 'Orders', theme),
+                ],
+                _navItem(Icons.person_outline_rounded, Icons.person_rounded, 'Profile', theme),
+              ],
+            ),
           ),
-        ],
-      ).animate().slideY(begin: 1.0, duration: 600.ms, curve: Curves.easeOutCubic),
+        ),
+      ).animate().slideY(begin: 1.0, duration: 800.ms, curve: Curves.easeOutCubic),
+    );
+  }
+
+  NavigationDestination _navItem(IconData icon, IconData selectedIcon, String label, ThemeData theme) {
+    return NavigationDestination(
+      icon: Icon(icon, color: Colors.grey.shade400, size: 24),
+      selectedIcon: Icon(selectedIcon, color: theme.colorScheme.primary, size: 24),
+      label: label,
     );
   }
 }

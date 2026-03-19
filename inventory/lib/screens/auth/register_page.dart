@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -16,13 +17,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String _selectedRole = 'user';
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   final supabase = Supabase.instance.client;
 
   Future<void> _register() async {
-    if (_emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _nameController.text.isEmpty) {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty || _nameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields'), behavior: SnackBarBehavior.floating),
       );
@@ -38,11 +38,9 @@ class _RegisterPageState extends State<RegisterPage> {
       );
 
       final user = authResponse.user;
-      if (user == null) {
-        throw 'Registration failed';
-      }
+      if (user == null) throw 'Registration failed';
 
-      await supabase.from('profiles').insert({
+      await supabase.from('profiles').upsert({
         'id': user.id,
         'name': _nameController.text.trim(),
         'role': _selectedRole,
@@ -50,14 +48,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
+        const SnackBar(content: Text('Account created successfully!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating),
       );
-
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -68,113 +67,123 @@ class _RegisterPageState extends State<RegisterPage> {
     final theme = Theme.of(context);
     
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Create Account', style: TextStyle(fontWeight: FontWeight.bold)),
-        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            decoration: BoxDecoration(color: theme.colorScheme.surfaceContainer, shape: BoxShape.circle),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ),
       ),
-      body: Center(
+      body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Icon
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [theme.colorScheme.secondary, theme.colorScheme.primary],
-                  ),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.colorScheme.secondary.withOpacity(0.3),
-                      blurRadius: 15,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
+              Text(
+                'Join the\nNetwork.',
+                style: GoogleFonts.outfit(
+                  fontSize: 40,
+                  fontWeight: FontWeight.w900,
+                  height: 1.1,
+                  letterSpacing: -1,
                 ),
-                child: const Icon(
-                  Icons.person_add_alt_1_rounded,
-                  color: Colors.white,
-                  size: 56,
-                ),
-              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-
+              ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.1),
+              
+              const SizedBox(height: 12),
+              
+              Text(
+                'Create your professional workstation account.',
+                style: TextStyle(color: Colors.blueGrey.shade400, fontSize: 16, fontWeight: FontWeight.w500),
+              ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.1),
+              
               const SizedBox(height: 40),
 
-              Card(
-                elevation: 0,
-                color: theme.colorScheme.surface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                  side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.1)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      _buildTextField(
-                        controller: _nameController,
-                        label: 'Full Name',
-                        icon: Icons.person_rounded,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildTextField(
-                        controller: _emailController,
-                        label: 'Email Address',
-                        icon: Icons.email_rounded,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      _buildTextField(
-                        controller: _passwordController,
-                        label: 'Password',
-                        icon: Icons.lock_rounded,
-                        obscureText: true,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<String>(
-                        value: _selectedRole,
-                        items: const [
-                          DropdownMenuItem(value: 'admin', child: Text('Admin', style: TextStyle(fontWeight: FontWeight.w500))),
-                          DropdownMenuItem(value: 'user', child: Text('User', style: TextStyle(fontWeight: FontWeight.w500))),
-                        ],
-                        onChanged: (value) => setState(() => _selectedRole = value!),
-                        decoration: InputDecoration(
-                          labelText: 'Role',
-                          prefixIcon: Icon(Icons.security_rounded, color: theme.colorScheme.primary),
-                        ),
-                        dropdownColor: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _register,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.colorScheme.primary,
-                            foregroundColor: theme.colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
-                                )
-                              : const Text('Register', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                        ),
-                      ),
-                    ],
+              _fieldLabel('Full Name', theme),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(hintText: 'John Doe', prefixIcon: Icon(Icons.badge_outlined)),
+              ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 20),
+
+              _fieldLabel('Email Address', theme),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(hintText: 'name@company.com', prefixIcon: Icon(Icons.mail_outline_rounded)),
+              ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 20),
+
+              _fieldLabel('Password', theme),
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                decoration: InputDecoration(
+                  hintText: '••••••••',
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
-              ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1, end: 0),
+              ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 20),
+
+              _fieldLabel('Access Level', theme),
+              DropdownButtonFormField<String>(
+                value: _selectedRole,
+                items: const [
+                  DropdownMenuItem(value: 'user', child: Text('Standard User')),
+                  DropdownMenuItem(value: 'admin', child: Text('Administrator')),
+                ],
+                onChanged: (value) => setState(() => _selectedRole = value!),
+                decoration: const InputDecoration(prefixIcon: Icon(Icons.admin_panel_settings_outlined)),
+              ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.1),
+
+              const SizedBox(height: 48),
+
+              SizedBox(
+                width: double.infinity,
+                height: 64,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                    elevation: 12,
+                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Create Account', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                ),
+              ).animate().fadeIn(delay: 800.ms).scale(),
+
+              const SizedBox(height: 32),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                   Text("Already registered? ", style: TextStyle(color: Colors.blueGrey.shade400, fontWeight: FontWeight.w600)),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Text('Sign In Now', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.w900)),
+                  ),
+                ],
+              ).animate().fadeIn(delay: 1000.ms),
+              
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -182,21 +191,10 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
-      ),
+  Widget _fieldLabel(String label, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0, left: 4),
+      child: Text(label, style: TextStyle(fontWeight: FontWeight.w800, color: theme.colorScheme.primary, fontSize: 13)),
     );
   }
 }

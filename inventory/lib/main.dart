@@ -12,6 +12,9 @@ import 'screens/orders/orders_page.dart';
 import 'screens/categories/categories_page.dart';
 import 'screens/products/products_page.dart';
 import 'screens/reports/reports_page.dart';
+import 'screens/dashboard/main_navigation_page.dart';
+
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,104 +34,101 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Shop Inventory',
+      title: 'Tech Zone',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6366F1), // Indigo
+          seedColor: const Color(0xFF6366F1),
           brightness: Brightness.light,
           primary: const Color(0xFF6366F1),
-          secondary: const Color(0xFF14B8A6), // Teal
-          surface: const Color(0xFFF8FAFC),
-          background: const Color(0xFFF1F5F9),
+          surface: Colors.white,
+          surfaceContainer: const Color(0xFFF8FAFC),
         ),
-        textTheme: ThemeData.light().textTheme.copyWith(
-              displayLarge: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-              displayMedium: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-              bodyLarge: const TextStyle(color: Color(0xFF334155)),
-              bodyMedium: const TextStyle(color: Color(0xFF475569)),
-            ),
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
+        textTheme: GoogleFonts.outfitTextTheme(),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFFF1F5F9),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        ),
+        cardTheme: CardThemeData(
           elevation: 0,
-          backgroundColor: Colors.transparent,
-          foregroundColor: Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          color: Colors.white,
+          shadowColor: Colors.black.withOpacity(0.1),
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          ),
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
           ),
         ),
       ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF818CF8),
-          brightness: Brightness.dark,
-          primary: const Color(0xFF818CF8),
-          secondary: const Color(0xFF2DD4BF),
-          surface: const Color(0xFF1E293B),
-          background: const Color(0xFF0F172A),
-        ),
-      ),
-      initialRoute: '/',
+      home: const AuthGate(),
       onGenerateRoute: (settings) {
-        switch (settings.name ?? '/') {
-          case '/':
-            return MaterialPageRoute(builder: (_) => const WelcomePage());
-          case '/login':
-            return MaterialPageRoute(builder: (_) => const LoginPage());
-          case '/register':
-            return MaterialPageRoute(builder: (_) => const RegisterPage());
-          case '/dashboard':
-            final role = settings.arguments as String?;
-            return MaterialPageRoute(builder: (_) => DashboardPage(role: role));
-          case '/computers':
-            return MaterialPageRoute(builder: (_) => const ComputerListPage());
-          case '/add-computer':
-            return MaterialPageRoute(builder: (_) => const AddComputerPage());
-          case '/orders':
-            return MaterialPageRoute(builder: (_) => const OrdersPage());
-          case '/categories':
-            return MaterialPageRoute(builder: (_) => const CategoriesPage());
-          case '/products':
-            return MaterialPageRoute(builder: (_) => const ProductsPage());
-          case '/reports':
-            final args = settings.arguments as Map<String, dynamic>? ?? {};
-            return MaterialPageRoute(
-              builder: (_) => ReportsPage(
-                totalRevenue: args['revenue'] ?? 0.0,
-                totalOrders: args['orders'] ?? 0,
-              ),
-            );
-          default:
-            return MaterialPageRoute(
-              builder: (_) => const Scaffold(
-                body: Center(child: Text('Route not found')),
-              ),
-            );
-        }
+        if (settings.name == '/login') return MaterialPageRoute(builder: (_) => const LoginPage());
+        if (settings.name == '/register') return MaterialPageRoute(builder: (_) => const RegisterPage());
+        if (settings.name == '/orders') return MaterialPageRoute(builder: (_) => const OrdersPage());
+        if (settings.name == '/add-computer') return MaterialPageRoute(builder: (_) => const AddComputerPage());
+        return null;
       },
     );
   }
 }
+
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<AuthState>(
+      stream: Supabase.instance.client.auth.onAuthStateChange,
+      builder: (context, snapshot) {
+        // If snapshot is disconnected or session is null, go to welcome
+        final session = snapshot.data?.session ?? Supabase.instance.client.auth.currentSession;
+        
+        if (session == null) {
+          return const WelcomePage();
+        }
+
+        // Use a Key to force rebuild when user changes
+        return FutureBuilder<Map<String, dynamic>?>(
+          key: ValueKey(session.user.id),
+          future: Supabase.instance.client
+              .from('profiles')
+              .select()
+              .eq('id', session.user.id)
+              .maybeSingle()
+              .timeout(const Duration(seconds: 10), onTimeout: () => null),
+          builder: (context, profileSnapshot) {
+            if (profileSnapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            }
+            
+            // Fallback to 'user' if profile load fails
+            final role = profileSnapshot.data?['role'] ?? 'user';
+            return MainNavigationPage(role: role);
+          },
+        );
+      },
+    );
+  }
+}
+

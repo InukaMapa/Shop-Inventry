@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
@@ -13,148 +14,139 @@ class _WelcomePageState extends State<WelcomePage> {
   final supabase = Supabase.instance.client;
 
   @override
-  void initState() {
-    super.initState();
-    _verifySupabaseConnection();
-  }
-
-  Future<void> _verifySupabaseConnection() async {
-    try {
-      final data = await supabase.from('profiles').select().limit(1);
-      debugPrint('✅ Supabase connected successfully: $data');
-    } catch (e) {
-      debugPrint('❌ Supabase connection error: $e');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.colorScheme.primaryContainer,
-              theme.colorScheme.surface,
-              theme.colorScheme.secondaryContainer.withOpacity(0.5),
-            ],
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // 🎭 Modern Abstract Background
+          Positioned(
+            top: -100,
+            right: -100,
+            child: Container(
+              width: 300,
+              height: 300,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+            ).animate().scale(duration: 2.seconds, curve: Curves.easeOut),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(32),
+          Positioned(
+            bottom: -50,
+            left: -50,
+            child: Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.secondary.withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+            ).animate().scale(duration: 2.seconds, delay: 500.ms, curve: Curves.easeOut),
+          ),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Hero Icon with pulsing animation
+                  const Spacer(),
+                  
+                  // 🚀 Logo / Icon
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          theme.colorScheme.primary,
-                          theme.colorScheme.secondary,
-                        ],
+                        colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(24),
                       boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withOpacity(0.3),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                          offset: const Offset(0, 10),
-                        ),
+                        BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.computer_rounded,
-                      size: 72,
-                      color: Colors.white,
-                    ),
-                  ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-                   .scaleXY(end: 1.05, duration: 1500.ms, curve: Curves.easeInOut),
+                    child: const Icon(Icons.bolt_rounded, size: 48, color: Colors.white),
+                  ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.5, 0.5)),
 
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 40),
 
-                  // App Title
+                  // ✍️ Typography
                   Text(
-                    'Shop Inventory\nSystem',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.displayMedium?.copyWith(
+                    'Precision\nInventory.',
+                    style: GoogleFonts.outfit(
+                      fontSize: 48,
                       fontWeight: FontWeight.w900,
-                      height: 1.2,
-                      letterSpacing: -1,
-                      foreground: Paint()
-                        ..shader = LinearGradient(
-                          colors: [
-                            theme.colorScheme.primary,
-                            theme.colorScheme.secondary,
-                          ],
-                        ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 70.0)),
+                      height: 1.1,
+                      letterSpacing: -2,
+                      color: theme.colorScheme.onSurface,
                     ),
-                  ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.2, end: 0),
+                  ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
 
                   const SizedBox(height: 16),
 
-                  // Subtitle
                   Text(
-                    'Manage and track computer assets effortlessly with our modern platform.',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    'The next generation of asset management for modern tech enterprises.',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.blueGrey.shade400,
+                      fontWeight: FontWeight.w500,
                       height: 1.5,
                     ),
-                  ).animate().fadeIn(delay: 300.ms, duration: 800.ms).slideY(begin: 0.2, end: 0),
+                  ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.1),
 
-                  const SizedBox(height: 56),
+                  const Spacer(),
 
-                  // Login Button
+                  // 🔘 Buttons
                   SizedBox(
                     width: double.infinity,
-                    height: 56,
+                    height: 64,
                     child: ElevatedButton(
                       onPressed: () => Navigator.pushNamed(context, '/login'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: theme.colorScheme.onPrimary,
-                        elevation: 8,
-                        shadowColor: theme.colorScheme.primary.withOpacity(0.5),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        foregroundColor: Colors.white,
+                        elevation: 12,
+                        shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                       ),
-                      child: const Text('Login securely', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                          const SizedBox(width: 12),
+                          const Icon(Icons.arrow_forward_rounded),
+                        ],
+                      ),
                     ),
-                  ).animate().fadeIn(delay: 600.ms, duration: 800.ms).slideY(begin: 0.2, end: 0),
+                  ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
 
                   const SizedBox(height: 20),
 
-                  // Register Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: OutlinedButton(
+                  Center(
+                    child: TextButton(
                       onPressed: () => Navigator.pushNamed(context, '/register'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: theme.colorScheme.primary,
-                        side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.5), width: 2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                      child: Text(
+                        'Create New Account',
+                        style: TextStyle(
+                          color: theme.colorScheme.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
                         ),
                       ),
-                      child: const Text('Create an account', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
-                  ).animate().fadeIn(delay: 800.ms, duration: 800.ms).slideY(begin: 0.2, end: 0),
+                  ).animate().fadeIn(delay: 1000.ms),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -13,25 +13,36 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
   final orderProvider = OrderProvider();
 
   @override
+  void initState() {
+    super.initState();
+    orderProvider.fetchOrders();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final orders = orderProvider.orders;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Orders', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: -1)),
         centerTitle: true,
       ),
-      body: orders.isEmpty
-          ? _buildEmptyState(theme)
-          : ListView.builder(
-              padding: const EdgeInsets.all(20),
-              itemCount: orders.length,
-              itemBuilder: (context, index) {
-                final order = orders[index];
-                return _buildOrderCard(theme, order);
-              },
-            ),
+      body: ListenableBuilder(
+        listenable: orderProvider,
+        builder: (context, _) {
+          final orders = orderProvider.orders;
+          if (orders.isEmpty) return _buildEmptyState(theme);
+          
+          return ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: orders.length,
+            itemBuilder: (context, index) {
+              final order = orders[index];
+              return _buildOrderCard(theme, order);
+            },
+          );
+        },
+      ),
     );
   }
 

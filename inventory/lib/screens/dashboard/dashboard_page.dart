@@ -15,10 +15,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final supabase = Supabase.instance.client;
   bool _isLoading = true;
-  int _totalAssets = 0;
   int _availableAssets = 0;
-  int _maintenanceAssets = 0;
-  List<Map<String, dynamic>> _recentActivity = [];
   double _totalRevenue = 0;
   int _totalOrders = 0;
   bool _isLowStock = false;
@@ -38,36 +35,38 @@ class _DashboardPageState extends State<DashboardPage> {
     try {
       final assetsResponse = await supabase.from('computers').select();
       final assets = List<Map<String, dynamic>>.from(assetsResponse);
-
-      final recentResponse = await supabase
-          .from('computers')
-          .select()
-          .order('created_at', ascending: false)
-          .limit(5);
+      final ordersResponse = await supabase.from('orders').select();
+      final orders = List<Map<String, dynamic>>.from(ordersResponse);
 
       if (mounted) {
         setState(() {
-          _totalAssets = assets.length;
-          
           int availableQty = 0;
+          double totalRev = 0;
+
           for (var a in assets) {
-            String status = (a['status'] ?? '').toString();
-            if (status == 'Available') {
-              availableQty += int.tryParse(a['ram'].toString()) ?? 1;
+            final status = (a['status'] ?? '').toString();
+            final qty = int.tryParse(a['ram']?.toString() ?? '0') ?? 0;
+            if (status == 'Available' || status == 'In Use') {
+              availableQty += qty;
+            }
+          }
+
+          for (var o in orders) {
+            final val = o['total_amount'];
+            if (val != null) {
+              totalRev += double.tryParse(val.toString()) ?? 0.0;
             }
           }
           
           _availableAssets = availableQty;
-          _maintenanceAssets = assets.where((a) => a['status'] == 'Maintenance').length;
-          _recentActivity = List<Map<String, dynamic>>.from(recentResponse);
-          
-          _totalOrders = assets.where((a) => a['status'] == 'In Use').length;
-          _totalRevenue = _totalOrders * 25000.0;
+          _totalOrders = orders.length;
+          _totalRevenue = totalRev;
           _isLowStock = _availableAssets < 5;
           _isLoading = false;
         });
       }
     } catch (e) {
+      debugPrint('Dashboard stats fetch error: $e');
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -78,46 +77,67 @@ class _DashboardPageState extends State<DashboardPage> {
     final bool isAdmin = widget.role == 'admin';
 
     if (_isLoading && isAdmin) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: theme.colorScheme.surface,
+        body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
+      );
     }
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildAppBar(context, theme, isAdmin),
-          if (isAdmin && _isLowStock)
-            SliverToBoxAdapter(
-              child: _buildLowStockNotification(theme),
-            ),
-          SliverToBoxAdapter(
-            child: isAdmin ? _buildAdminLayout(theme) : _buildUserLayout(theme),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primary.withOpacity(0.03),
+              theme.colorScheme.surface,
+            ],
           ),
-        ],
+        ),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            _buildAppBar(context, theme, isAdmin),
+            if (isAdmin && _isLowStock)
+              SliverToBoxAdapter(child: _buildLowStockNotification(theme)),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 100), // Space for bottom nav
+                child: isAdmin ? _buildAdminLayout(theme) : _buildUserLayout(theme),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildLowStockNotification(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.error.withOpacity(0.2)),
+        color: theme.colorScheme.errorContainer.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.colorScheme.error.withOpacity(0.1), width: 1.5),
       ),
       child: Row(
         children: [
-          Icon(Icons.inventory_2_rounded, color: theme.colorScheme.error),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: theme.colorScheme.error.withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error, size: 28),
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Low Stock Alert', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.error)),
-                Text('Only $_availableAssets items left in inventory. Consider restocking.', style: TextStyle(fontSize: 12, color: theme.colorScheme.error.withOpacity(0.8))),
+                Text('Low Stock Inventory', style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.error, fontSize: 16)),
+                const SizedBox(height: 2),
+                Text('Only $_availableAssets units left. Restock soon.', style: TextStyle(fontSize: 13, color: theme.colorScheme.error.withOpacity(0.8))),
               ],
             ),
           ),
@@ -131,197 +151,189 @@ class _DashboardPageState extends State<DashboardPage> {
       elevation: 0,
       floating: true,
       pinned: true,
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: theme.colorScheme.surface.withOpacity(0.9),
       scrolledUnderElevation: 0,
       centerTitle: false,
-      title: Text(
-        isAdmin ? 'Admin Portal' : 'Dashboard',
-        style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 24),
+      title: Padding(
+        padding: const EdgeInsets.only(left: 8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              isAdmin ? 'DASHBOARD' : 'USER HUB',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 2),
+            ),
+            Text(
+              isAdmin ? 'Tech Zone Pro' : 'Tech Zone',
+              style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 24),
+            ),
+          ],
+        ),
       ),
       actions: [
-        IconButton(
-          style: IconButton.styleFrom(
-            backgroundColor: theme.colorScheme.errorContainer.withOpacity(0.5),
-            foregroundColor: theme.colorScheme.error,
+        Container(
+          margin: const EdgeInsets.only(right: 16),
+          decoration: BoxDecoration(color: theme.colorScheme.errorContainer.withOpacity(0.3), shape: BoxShape.circle),
+          child: IconButton(
+            icon: const Icon(Icons.logout_rounded, size: 22),
+            color: theme.colorScheme.error,
+            onPressed: () async {
+              await supabase.auth.signOut();
+              if (context.mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+            },
           ),
-          icon: const Icon(Icons.logout_rounded),
-          onPressed: () async {
-            await supabase.auth.signOut();
-            if (context.mounted) {
-              Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
-            }
-          },
-        ).animate().fadeIn(duration: 600.ms),
-        const SizedBox(width: 12),
+        ).animate().fadeIn(duration: 600.ms).scale(),
       ],
     );
   }
 
-  // --- ADMIN VIEW ---
   Widget _buildAdminLayout(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 📊 Stats Horizontal Row
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: [
-                _StatCard(
-                  label: 'Total Revenue',
-                  value: 'Rs. ${_totalRevenue > 1000 ? '${(_totalRevenue / 1000).toStringAsFixed(1)}k' : _totalRevenue.toStringAsFixed(0)}',
-                  icon: Icons.payments_rounded,
-                  color: theme.colorScheme.primary,
-                  delayMs: 100,
-                ),
-                _StatCard(
-                  label: 'Total Orders',
-                  value: _totalOrders.toString(),
-                  icon: Icons.local_shipping_rounded,
-                  color: Colors.teal,
-                  delayMs: 200,
-                ),
-                _StatCard(
-                  label: 'Available',
-                  value: _availableAssets.toString(),
-                  icon: Icons.inventory_rounded,
-                  color: _isLowStock ? Colors.red : Colors.orange,
-                  delayMs: 300,
-                ),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              _StatCard(
+                label: 'Revenue',
+                value: 'Rs. ${_totalRevenue > 1000 ? '${(_totalRevenue / 1000).toStringAsFixed(1)}k' : _totalRevenue.toStringAsFixed(0)}',
+                icon: Icons.auto_graph_rounded,
+                color: theme.colorScheme.primary,
+                delayMs: 100,
+              ),
+              _StatCard(
+                label: 'Orders',
+                value: _totalOrders.toString(),
+                icon: Icons.shopping_basket_rounded,
+                color: Colors.teal,
+                delayMs: 200,
+              ),
+              _StatCard(
+                label: 'In Stock',
+                value: _availableAssets.toString(),
+                icon: Icons.inventory_2_rounded,
+                color: _isLowStock ? Colors.red : Colors.indigo,
+                delayMs: 300,
+              ),
+            ],
           ),
-
-          const SizedBox(height: 32),
-
-          // ⚡ Admin Actions Grid
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Business Hub',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, letterSpacing: -0.5),
-            ),
-          ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
-
-          const SizedBox(height: 16),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.4,
-              children: [
-                _AdminActionTile(
-                  title: 'Order Tracking',
-                  icon: Icons.receipt_long_rounded,
-                  color: Colors.blueAccent,
-                  onTap: () => Navigator.pushNamed(context, '/orders'),
-                  delayMs: 500,
-                ),
-                _AdminActionTile(
-                  title: 'Add New Asset',
-                  icon: Icons.add_business_rounded,
-                  color: Colors.indigoAccent,
-                  onTap: () => Navigator.pushNamed(context, '/add-computer'),
-                  delayMs: 600,
-                ),
-                _AdminActionTile(
-                  title: 'Categories',
-                  icon: Icons.category_rounded,
-                  color: Colors.teal,
-                  onTap: () => Navigator.pushNamed(context, '/categories'),
-                  delayMs: 700,
-                ),
-                _AdminActionTile(
-                  title: 'Data Reports',
-                  icon: Icons.analytics_rounded,
-                  color: Colors.purple,
-                  onTap: () {},
-                  delayMs: 800,
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Text('Operation Center', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+        ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 20,
+            crossAxisSpacing: 20,
+            childAspectRatio: 1.1,
+            children: [
+              _AdminActionTile(
+                title: 'Orders',
+                subtitle: 'Track status',
+                icon: Icons.receipt_long_rounded,
+                color: Colors.blueAccent,
+                onTap: () => Navigator.pushNamed(context, '/orders'),
+                delayMs: 100,
+              ),
+              _AdminActionTile(
+                title: 'Add New',
+                subtitle: 'Create asset',
+                icon: Icons.add_circle_rounded,
+                color: Colors.indigoAccent,
+                onTap: () async {
+                  await Navigator.pushNamed(context, '/add-computer');
+                  _fetchStats();
+                },
+                delayMs: 200,
+              ),
+              _AdminActionTile(
+                title: 'Inventory',
+                subtitle: 'Manage stock',
+                icon: Icons.category_rounded,
+                color: Colors.teal,
+                onTap: () => Navigator.pushNamed(context, '/categories'),
+                delayMs: 300,
+              ),
+              _AdminActionTile(
+                title: 'Analytics',
+                subtitle: 'View growth',
+                icon: Icons.leaderboard_rounded,
+                color: Colors.orange,
+                onTap: () {},
+                delayMs: 400,
+              ),
+            ],
           ),
-
-          const SizedBox(height: 32),
-
-
-          const SizedBox(height: 40),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  // --- USER VIEW ---
   Widget _buildUserLayout(ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _GreetingCard(theme: theme),
-          ).animate().scaleXY(begin: 0.95, end: 1.0, duration: 600.ms, curve: Curves.easeOut),
-
-          const SizedBox(height: 32),
-
-          Padding(
-             padding: const EdgeInsets.symmetric(horizontal: 20),
-             child: Row(
-               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               children: [
-                 Text('Categories', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, letterSpacing: -0.5)),
-                 TextButton(onPressed: () => Navigator.pushNamed(context, '/computers'), child: const Text('View All')),
-               ],
-             ),
-          ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
-
-          const SizedBox(height: 12),
-          
-          SizedBox(
-            height: 140,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              physics: const BouncingScrollPhysics(),
-              children: [
-                _CategoryCard(icon: Icons.computer_rounded, title: 'Desktops', color: const Color(0xFF6366F1), delayMs: 400),
-                _CategoryCard(icon: Icons.laptop_mac_rounded, title: 'Laptops', color: const Color(0xFF14B8A6), delayMs: 500),
-                _CategoryCard(icon: Icons.mouse_rounded, title: 'Accessories', color: const Color(0xFFF59E0B), delayMs: 600),
-              ],
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _GreetingCard(theme: theme),
+        ).animate().scaleXY(begin: 0.95, end: 1.0, duration: 600.ms, curve: Curves.easeOut),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Elite Categories', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+              TextButton(
+                onPressed: () => Navigator.pushNamed(context, '/computers'),
+                child: Text('Explore All', style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.primary)),
+              ),
+            ],
           ),
-
-          const SizedBox(height: 32),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _DashboardCard(
-              icon: Icons.inventory_2_rounded,
-              title: 'All Inventory List',
-              subtitle: 'View and manage all your assets',
-              color: theme.colorScheme.primary,
-              onTap: () => Navigator.pushNamed(context, '/computers'),
-              delayMs: 500,
-            ),
+        ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 160,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
+            children: [
+              _CategoryCard(icon: Icons.desktop_windows_rounded, title: 'Desktops', color: const Color(0xFF6366F1), delayMs: 400),
+              _CategoryCard(icon: Icons.laptop_rounded, title: 'Laptops', color: const Color(0xFF14B8A6), delayMs: 500),
+              _CategoryCard(icon: Icons.keyboard_rounded, title: 'Accessories', color: const Color(0xFFF59E0B), delayMs: 600),
+            ],
           ),
-          const SizedBox(height: 40),
-        ],
-      ),
+        ),
+        const SizedBox(height: 40),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: _DashboardCard(
+            icon: Icons.auto_awesome_rounded,
+            title: 'Inventory Catalog',
+            subtitle: 'Browse premium computer hardware',
+            color: theme.colorScheme.primary,
+            onTap: () => Navigator.pushNamed(context, '/computers'),
+            delayMs: 700,
+          ),
+        ),
+      ],
     );
   }
 }
-
-// --- SUPPORTING WIDGETS ---
 
 class _StatCard extends StatelessWidget {
   final String label, value;
@@ -334,57 +346,71 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 150,
+      width: 160,
       margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(24),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8)),
+        ],
         border: Border.all(color: color.withOpacity(0.1), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 16),
-          Text(value, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color.withOpacity(0.7))),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 20),
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blueGrey.shade300)),
         ],
       ),
-    ).animate().fadeIn(delay: delayMs.ms).scale(begin: const Offset(0.9, 0.9));
+    ).animate().fadeIn(delay: delayMs.ms).slideY(begin: 0.2, end: 0);
   }
 }
 
 class _AdminActionTile extends StatelessWidget {
-  final String title;
+  final String title, subtitle;
   final IconData icon;
   final Color color;
   final VoidCallback onTap;
   final int delayMs;
 
-  const _AdminActionTile({required this.title, required this.icon, required this.color, required this.onTap, required this.delayMs});
+  const _AdminActionTile({required this.title, required this.subtitle, required this.icon, required this.color, required this.onTap, required this.delayMs});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(32),
       child: Container(
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.2)),
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: color.withOpacity(0.12), width: 1.5),
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 13)),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(16)),
+              child: Icon(icon, color: color, size: 32),
+            ),
+            const Spacer(),
+            Text(title, style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 18, letterSpacing: -0.5)),
+            Text(subtitle, style: TextStyle(color: color.withOpacity(0.6), fontSize: 13, fontWeight: FontWeight.w600)),
           ],
         ),
       ),
-    ).animate().fadeIn(delay: delayMs.ms).slideY(begin: 0.2);
+    ).animate().fadeIn(delay: delayMs.ms).scale(begin: const Offset(0.9, 0.9));
   }
 }
 
@@ -396,18 +422,30 @@ class _GreetingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.secondary], begin: Alignment.topLeft, end: Alignment.bottomRight),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8))],
+        gradient: LinearGradient(
+          colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: [
+          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.35), blurRadius: 25, offset: const Offset(0, 12)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Welcome Back 👋', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+            child: const Text('PREMIUM ACCESS', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+          ),
+          const SizedBox(height: 20),
+          const Text('Welcome Back', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1)),
           const SizedBox(height: 8),
-          Text('View and track your assigned assets instantly.', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 16)),
+          Text('Your personalized inventory hub is ready.', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 16, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -427,20 +465,20 @@ class _DashboardCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(24),
-      child: Ink(
-        padding: const EdgeInsets.all(20),
+      borderRadius: BorderRadius.circular(32),
+      child: Container(
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15, offset: const Offset(0, 5))],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: Colors.grey.shade100, width: 2),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(24)),
               child: Icon(icon, color: color, size: 32),
             ),
             const SizedBox(width: 20),
@@ -448,12 +486,13 @@ class _DashboardCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text(subtitle, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6), fontSize: 14)),
+                  Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+                  const SizedBox(height: 2),
+                  Text(subtitle, style: TextStyle(color: Colors.blueGrey.shade300, fontSize: 14, fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3), size: 28),
+            Icon(Icons.arrow_forward_ios_rounded, color: Colors.grey.shade300, size: 20),
           ],
         ),
       ),
@@ -472,41 +511,36 @@ class _CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 130,
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      width: 140,
+      margin: const EdgeInsets.only(right: 16, bottom: 8, top: 2),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ComputerListPage(category: title),
-            ),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (_) => ComputerListPage(category: title)));
         },
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: color.withOpacity(0.15), shape: BoxShape.circle),
-                child: Icon(icon, color: color, size: 26),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+                child: Icon(icon, color: color, size: 28),
               ),
               const Spacer(),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.5)),
+              Text('Products', style: TextStyle(color: color.withOpacity(0.5), fontSize: 11, fontWeight: FontWeight.w800)),
             ],
           ),
         ),
       ),
-    ).animate().fadeIn(delay: delayMs.ms).slideX(begin: 0.1);
+    ).animate().fadeIn(delay: delayMs.ms).scale(begin: const Offset(0.9, 0.9));
   }
 }
