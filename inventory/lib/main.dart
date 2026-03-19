@@ -8,6 +8,10 @@ import 'screens/auth/register_page.dart';
 import 'screens/dashboard/dashboard_page.dart';
 import 'screens/computers/computer_list_page.dart';
 import 'screens/computers/add_computer_page.dart';
+import 'screens/orders/orders_page.dart';
+import 'screens/categories/categories_page.dart';
+import 'screens/products/products_page.dart';
+import 'screens/reports/reports_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,41 +31,96 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'Shop Inventory',
       debugShowCheckedModeBanner: false,
+      themeMode: ThemeMode.system,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6366F1), // Indigo
+          brightness: Brightness.light,
+          primary: const Color(0xFF6366F1),
+          secondary: const Color(0xFF14B8A6), // Teal
+          surface: const Color(0xFFF8FAFC),
+          background: const Color(0xFFF1F5F9),
+        ),
+        textTheme: ThemeData.light().textTheme.copyWith(
+              displayLarge: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+              displayMedium: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+              bodyLarge: const TextStyle(color: Color(0xFF334155)),
+              bodyMedium: const TextStyle(color: Color(0xFF475569)),
+            ),
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Color(0xFF1E293B),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+          ),
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF818CF8),
+          brightness: Brightness.dark,
+          primary: const Color(0xFF818CF8),
+          secondary: const Color(0xFF2DD4BF),
+          surface: const Color(0xFF1E293B),
+          background: const Color(0xFF0F172A),
+        ),
+      ),
       initialRoute: '/',
       onGenerateRoute: (settings) {
         switch (settings.name ?? '/') {
           case '/':
-            return MaterialPageRoute(
-              builder: (_) => const WelcomePage(),
-            );
-
+            return MaterialPageRoute(builder: (_) => const WelcomePage());
           case '/login':
-            return MaterialPageRoute(
-              builder: (_) => const LoginPage(),
-            );
-
+            return MaterialPageRoute(builder: (_) => const LoginPage());
           case '/register':
-            return MaterialPageRoute(
-              builder: (_) => const RegisterPage(),
-            );
-
+            return MaterialPageRoute(builder: (_) => const RegisterPage());
           case '/dashboard':
             final role = settings.arguments as String?;
-            return MaterialPageRoute(
-              builder: (_) => DashboardPage(role: role),
-            );
-
+            return MaterialPageRoute(builder: (_) => DashboardPage(role: role));
           case '/computers':
-            return MaterialPageRoute(
-              builder: (_) => const ComputerListPage(),
-            );
-
+            return MaterialPageRoute(builder: (_) => const ComputerListPage());
           case '/add-computer':
+            return MaterialPageRoute(builder: (_) => const AddComputerPage());
+          case '/orders':
+            return MaterialPageRoute(builder: (_) => const OrdersPage());
+          case '/categories':
+            return MaterialPageRoute(builder: (_) => const CategoriesPage());
+          case '/products':
+            return MaterialPageRoute(builder: (_) => const ProductsPage());
+          case '/reports':
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
             return MaterialPageRoute(
-              builder: (_) => const AddComputerPage(),
+              builder: (_) => ReportsPage(
+                totalRevenue: args['revenue'] ?? 0.0,
+                totalOrders: args['orders'] ?? 0,
+              ),
             );
-
           default:
             return MaterialPageRoute(
               builder: (_) => const Scaffold(

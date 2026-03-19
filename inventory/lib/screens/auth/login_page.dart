@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../dashboard/main_navigation_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -19,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter email and password')),
+        const SnackBar(content: Text('Please enter email and password'), behavior: SnackBarBehavior.floating),
       );
       return;
     }
@@ -58,7 +59,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -67,83 +68,117 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6F8),
       appBar: AppBar(
-        title: const Text('Login'),
-        backgroundColor: Colors.blue,
+        title: const Text('Welcome Back', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Top Icon
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.lock_outline,
-                color: Colors.white,
-                size: 50,
-              ),
-            ),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Top Icon
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.colorScheme.primary.withOpacity(0.3),
+                      blurRadius: 15,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.lock_person_rounded,
+                  color: Colors.white,
+                  size: 56,
+                ),
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 40),
 
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email',
-              icon: Icons.email,
-              keyboardType: TextInputType.emailAddress,
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildTextField(
-              controller: _passwordController,
-              label: 'Password',
-              icon: Icons.lock,
-              obscureText: true,
-            ),
-
-            const SizedBox(height: 30),
-
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Card(
+                elevation: 0,
+                color: theme.colorScheme.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.1)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        controller: _emailController,
+                        label: 'Email Address',
+                        icon: Icons.email_rounded,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildTextField(
+                        controller: _passwordController,
+                        label: 'Password',
+                        icon: Icons.lock_rounded,
+                        obscureText: true,
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.colorScheme.primary,
+                            foregroundColor: theme.colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3),
+                                )
+                              : const Text('Login', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Login',
-                        style: TextStyle(fontSize: 18),
+              ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.1, end: 0),
+
+              const SizedBox(height: 24),
+
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/register');
+                },
+                child: RichText(
+                  text: TextSpan(
+                    text: "Don't have an account? ",
+                    style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 16),
+                    children: [
+                      TextSpan(
+                        text: 'Register',
+                        style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
                       ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
-              child: const Text(
-                "Don't have an account? Register",
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ],
+                    ],
+                  ),
+                ),
+              ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
+            ],
+          ),
         ),
       ),
     );
@@ -156,16 +191,13 @@ class _LoginPageState extends State<LoginPage> {
     TextInputType keyboardType = TextInputType.text,
     bool obscureText = false,
   }) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        prefixIcon: Icon(icon, color: Theme.of(context).colorScheme.primary),
       ),
     );
   }

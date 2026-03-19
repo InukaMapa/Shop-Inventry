@@ -18,6 +18,9 @@ dependencies:
 
   # ✅ Image picker (for selecting computer images)
   image_picker: ^1.0.4
+  google_fonts: ^8.0.2
+  flutter_animate: ^4.5.2
+  intl: ^0.20.2
 
 
 dev_dependencies:
