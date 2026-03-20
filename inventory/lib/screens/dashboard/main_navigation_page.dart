@@ -32,6 +32,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.role != widget.role) {
       _initializePages();
+      // Ensure index is within bounds of new pages list
+      if (_currentIndex >= _pages.length) {
+        setState(() => _currentIndex = _pages.length - 1);
+      }
     }
   }
 

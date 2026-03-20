@@ -124,7 +124,18 @@ class _DashboardPageState extends State<DashboardPage> {
           slivers: [
             _buildAppBar(context, theme, isAdmin),
             if (isAdmin && _isLowStock)
-              SliverToBoxAdapter(child: _buildLowStockNotification(theme)),
+              SliverToBoxAdapter(
+                child: Builder(
+                  builder: (context) {
+                    int totalUnits = 0;
+                    for (var a in _allAssets) {
+                      final cleanQty = a['ram']?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '0';
+                      totalUnits += int.tryParse(cleanQty) ?? 0;
+                    }
+                    return _buildLowStockNotification(theme, totalUnits);
+                  }
+                ),
+              ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 100), // Space for bottom nav
@@ -137,7 +148,7 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildLowStockNotification(ThemeData theme) {
+  Widget _buildLowStockNotification(ThemeData theme, int totalUnits) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       padding: const EdgeInsets.all(20),
@@ -160,7 +171,7 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 Text('Low Stock Inventory', style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.error, fontSize: 16)),
                 const SizedBox(height: 2),
-                Text('Only $_availableAssets units left. Restock soon.', style: TextStyle(fontSize: 13, color: theme.colorScheme.error.withOpacity(0.8))),
+                Text('Only $totalUnits units left in stock. Restock soon.', style: TextStyle(fontSize: 13, color: theme.colorScheme.error.withOpacity(0.8))),
               ],
             ),
           ),
@@ -184,19 +195,22 @@ class _DashboardPageState extends State<DashboardPage> {
             child: Image.asset('assets/images/tech_zone_logo.png', width: 44, height: 44, fit: BoxFit.cover),
           ),
           const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                isAdmin ? 'DASHBOARD' : 'USER HUB',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 2),
-              ),
-              Text(
-                isAdmin ? 'Tech Zone Pro' : 'Tech Zone',
-                style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 24),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isAdmin ? 'DASHBOARD' : 'USER HUB',
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 2),
+                ),
+                Text(
+                  isAdmin ? 'Tech Zone Pro' : 'Tech Zone',
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 22),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -394,7 +408,7 @@ class _DashboardPageState extends State<DashboardPage> {
             crossAxisCount: 2,
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
-            childAspectRatio: 1.35,
+            childAspectRatio: 1.0,
             children: [
               _AdminActionTile(
                 title: 'Orders',
@@ -594,8 +608,18 @@ class _AdminActionTile extends StatelessWidget {
               child: Icon(icon, color: color, size: 32),
             ),
             const Spacer(),
-            Text(title, style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 18, letterSpacing: -0.5)),
-            Text(subtitle, style: TextStyle(color: color.withOpacity(0.6), fontSize: 13, fontWeight: FontWeight.w600)),
+            Text(
+              title, 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 18, letterSpacing: -0.5)
+            ),
+            Text(
+              subtitle, 
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: color.withOpacity(0.6), fontSize: 13, fontWeight: FontWeight.w600)
+            ),
           ],
         ),
       ),

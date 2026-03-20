@@ -1,0 +1,50 @@
+﻿CommandRunner.runCommand (pac
+kage:args/command_runner.dart
+:212:13)
+           <asynchronous 
+suspension>
+           #5      FlutterCom
+mandRunner.runCommand.<anonym
+ous closure> (package:flutter
+_tools/src/runner/flutter_com
+mand_runner.dart:487:9)
+           <asynchronous 
+suspension>
+           #6      
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+           <asynchronous 
+suspension>
+           #7      FlutterCom
+mandRunner.runCommand (packag
+e:flutter_tools/src/runner/fl
+utter_command_runner.dart:422
+:5)
+           <asynchronous 
+suspension>
+           #8      
+run.<anonymous 
+closure>.<anonymous closure> 
+(package:flutter_tools/runner
+.dart:104:11)
+           <asynchronous 
+suspension>
+           #9      
+AppContext.run.<anonymous 
+closure> (package:flutter_too
+ls/src/base/context.dart:154:
+19)
+           <asynchronous 
+suspension>
+           #10     main (pack
+age:flutter_tools/executable.
+dart:103:3)
+           <asynchronous 
+suspension>
+
+
+[        ] Running 3 shutdown hooks
+[   +4 ms] Shutdown hooks complete
+[ +254 ms] exiting with code 1

@@ -48,117 +48,121 @@ class _WelcomePageState extends State<WelcomePage> {
           ),
 
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Spacer(),
-                  
-                  // 🚀 Logo / Icon
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(28),
-                      child: Image.asset(
-                        'assets/images/tech_zone_logo.png', 
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)]),
-                          ),
-                          child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 48),
-                        ),
-                      ),
-                    ),
-                  ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.5, 0.5)),
-
-                  const SizedBox(height: 40),
-
-                  // ✍️ Typography
-                  Row(
-                    children: [
-                      Text(
-                        'Tech\nZone.',
-                        style: GoogleFonts.outfit(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w900,
-                          height: 1.1,
-                          letterSpacing: -2,
-                          color: theme.colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: Icon(Icons.shopping_bag_rounded, size: 40, color: theme.colorScheme.primary.withOpacity(0.5)),
-                      ),
-                    ],
-                  ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
-
-                  const SizedBox(height: 16),
-
-                  Text(
-                    'The next generation of asset management for modern tech enterprises.',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.blueGrey.shade400,
-                      fontWeight: FontWeight.w500,
-                      height: 1.5,
-                    ),
-                  ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.1),
-
-                  const Spacer(),
-
-                  // 🔘 Buttons
-                  SizedBox(
-                    width: double.infinity,
-                    height: 64,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pushNamed(context, '/login'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 12,
-                        shadowColor: theme.colorScheme.primary.withOpacity(0.4),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-                          const SizedBox(width: 12),
-                          const Icon(Icons.arrow_forward_rounded),
+              child: SizedBox(
+                height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Spacer(),
+                    
+                    // 🚀 Logo / Icon
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
                         ],
                       ),
-                    ),
-                  ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
-
-                  const SizedBox(height: 20),
-
-                  Center(
-                    child: TextButton(
-                      onPressed: () => Navigator.pushNamed(context, '/register'),
-                      child: Text(
-                        'Create New Account',
-                        style: TextStyle(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: Image.asset(
+                          'assets/images/tech_zone_logo.png', 
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)]),
+                            ),
+                            child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 48),
+                          ),
                         ),
                       ),
-                    ),
-                  ).animate().fadeIn(delay: 1000.ms),
-
-                  const SizedBox(height: 40),
-                ],
+                    ).animate().fadeIn(duration: 800.ms).scale(begin: const Offset(0.5, 0.5)),
+          
+                    const SizedBox(height: 40),
+          
+                    // ✍️ Typography
+                    Row(
+                      children: [
+                        Text(
+                          'Tech\nZone.',
+                          style: GoogleFonts.outfit(
+                            fontSize: 48,
+                            fontWeight: FontWeight.w900,
+                            height: 1.1,
+                            letterSpacing: -2,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 24),
+                          child: Icon(Icons.shopping_bag_rounded, size: 40, color: theme.colorScheme.primary.withOpacity(0.5)),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
+          
+                    const SizedBox(height: 16),
+          
+                    Text(
+                      'The next generation of asset management for modern tech enterprises.',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.blueGrey.shade400,
+                        fontWeight: FontWeight.w500,
+                        height: 1.5,
+                      ),
+                    ).animate().fadeIn(delay: 600.ms).slideX(begin: -0.1),
+          
+                    const Spacer(),
+          
+                    // 🔘 Buttons
+                    SizedBox(
+                      width: double.infinity,
+                      height: 64,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pushNamed(context, '/login'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 12,
+                          shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Get Started', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+                            SizedBox(width: 12),
+                            Icon(Icons.arrow_forward_rounded),
+                          ],
+                        ),
+                      ),
+                    ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.2),
+          
+                    const SizedBox(height: 20),
+          
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/register'),
+                        child: Text(
+                          'Create New Account',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ).animate().fadeIn(delay: 1000.ms),
+          
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ),
