@@ -42,7 +42,7 @@ class ReportsPage extends StatelessWidget {
                 Expanded(
                   child: _buildMiniStat(
                     'Order Velocity', 
-                    '${totalOrders} Completed', 
+                    '$totalOrders Completed', 
                     Icons.speed_rounded, 
                     Colors.blueAccent,
                   ),
