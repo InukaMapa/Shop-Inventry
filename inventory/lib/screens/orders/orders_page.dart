@@ -156,18 +156,30 @@ class _OrdersPageState extends State<OrdersPage> {
                               ],
                             ),
                              const SizedBox(height: 24),
-                             Row(
-                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                             const SizedBox(height: 24),
+                             Column(
+                               crossAxisAlignment: CrossAxisAlignment.start,
                                children: [
-                                 const Text('Admin Controls', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey)),
+                                 Row(
+                                   children: [
+                                     Icon(Icons.admin_panel_settings_rounded, size: 18, color: theme.colorScheme.primary),
+                                     const SizedBox(width: 8),
+                                     const Text('Update Order Status', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey, fontSize: 13)),
+                                   ],
+                                 ),
+                                 const SizedBox(height: 12),
                                  Wrap(
-                                   spacing: 8,
+                                   spacing: 10,
+                                   runSpacing: 10,
                                    children: ['Processing', 'Completed', 'Cancelled'].map((s) {
                                      final isSelected = status == s;
                                      return ChoiceChip(
-                                       label: Text(s, style: TextStyle(fontSize: 10, color: isSelected ? Colors.white : Colors.black, fontWeight: FontWeight.bold)),
+                                       label: Text(s, style: TextStyle(fontSize: 11, color: isSelected ? Colors.white : Colors.black87, fontWeight: FontWeight.bold)),
                                        selected: isSelected,
                                        selectedColor: theme.colorScheme.primary,
+                                       backgroundColor: Colors.grey.shade50,
+                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                       side: BorderSide(color: isSelected ? theme.colorScheme.primary : Colors.grey.shade200),
                                        onSelected: (val) {
                                          if (val) _updateOrderStatus(order['id'], s);
                                        },

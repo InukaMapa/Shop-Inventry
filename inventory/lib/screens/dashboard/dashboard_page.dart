@@ -394,7 +394,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Text('Operation Center', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5)),
@@ -451,7 +451,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
@@ -553,27 +553,36 @@ class _StatCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 8)),
+          BoxShadow(color: color.withValues(alpha: 0.12), blurRadius: 25, offset: const Offset(0, 12)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 5, offset: const Offset(0, 2)),
         ],
-        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
+        border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
-            child: Icon(icon, color: color, size: 24),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color.withValues(alpha: 0.2), color.withValues(alpha: 0.1)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle
+            ),
+            child: Icon(icon, color: color, size: 26),
           ),
-          const SizedBox(height: 16),
+          const Spacer(),
           Text(value, 
             maxLines: 1, 
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: color, letterSpacing: -1)),
-          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.blueGrey.shade300)),
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: color, letterSpacing: -1.2)),
+          const SizedBox(height: 2),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.blueGrey.shade300, letterSpacing: 0.5)),
         ],
       ),
-    ).animate().fadeIn(delay: delayMs.ms).slideY(begin: 0.2, end: 0);
+    ).animate().fadeIn(delay: delayMs.ms).slideY(begin: 0.2, end: 0).shimmer(delay: (delayMs + 400).ms, duration: 1.5.seconds);
   }
 }
 
@@ -594,31 +603,39 @@ class _AdminActionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withOpacity(0.04),
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: color.withOpacity(0.12), width: 1.5),
+          border: Border.all(color: color.withOpacity(0.15), width: 1.5),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4)),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: color.withOpacity(0.15), borderRadius: BorderRadius.circular(16)),
-              child: Icon(icon, color: color, size: 32),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10)]
+              ),
+              child: Icon(icon, color: color, size: 28),
             ),
             const Spacer(),
             Text(
               title, 
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 18, letterSpacing: -0.5)
+              style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 18, letterSpacing: -0.8)
             ),
+            const SizedBox(height: 2),
             Text(
               subtitle, 
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: color.withOpacity(0.6), fontSize: 13, fontWeight: FontWeight.w600)
+              style: TextStyle(color: color.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.w700)
             ),
           ],
         ),
