@@ -44,7 +44,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     if (isAdmin) {
       _pages = [
         DashboardPage(role: widget.role),
-        const CategoriesPage(), 
+        const CategoriesPage(),
         const ProfilePage(),
       ];
     } else {
@@ -60,7 +60,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: AnimatedSwitcher(
@@ -89,7 +89,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
@@ -105,30 +105,39 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               },
               elevation: 0,
               backgroundColor: Colors.transparent,
-              indicatorColor: theme.colorScheme.primary.withOpacity(0.1),
+              indicatorColor: theme.colorScheme.primary.withValues(alpha: 0.1),
               height: 64,
               labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
               destinations: [
-                _navItem(Icons.dashboard_outlined, Icons.dashboard_rounded, 'Home', theme),
+                _navItem(Icons.dashboard_outlined, Icons.dashboard_rounded,
+                    'Home', theme),
                 if (widget.role == 'admin')
-                  _navItem(Icons.category_outlined, Icons.category_rounded, 'Categories', theme),
+                  _navItem(Icons.category_outlined, Icons.category_rounded,
+                      'Categories', theme),
                 if (widget.role != 'admin') ...[
-                  _navItem(Icons.shopping_basket_outlined, Icons.shopping_basket_rounded, 'Cart', theme),
-                  _navItem(Icons.receipt_long_outlined, Icons.receipt_long_rounded, 'Orders', theme),
+                  _navItem(Icons.shopping_basket_outlined,
+                      Icons.shopping_basket_rounded, 'Cart', theme),
+                  _navItem(Icons.receipt_long_outlined,
+                      Icons.receipt_long_rounded, 'Orders', theme),
                 ],
-                _navItem(Icons.person_outline_rounded, Icons.person_rounded, 'Profile', theme),
+                _navItem(Icons.person_outline_rounded, Icons.person_rounded,
+                    'Profile', theme),
               ],
             ),
           ),
         ),
-      ).animate().slideY(begin: 1.0, duration: 800.ms, curve: Curves.easeOutCubic),
+      )
+          .animate()
+          .slideY(begin: 1.0, duration: 800.ms, curve: Curves.easeOutCubic),
     );
   }
 
-  NavigationDestination _navItem(IconData icon, IconData selectedIcon, String label, ThemeData theme) {
+  NavigationDestination _navItem(
+      IconData icon, IconData selectedIcon, String label, ThemeData theme) {
     return NavigationDestination(
       icon: Icon(icon, color: Colors.grey.shade400, size: 24),
-      selectedIcon: Icon(selectedIcon, color: theme.colorScheme.primary, size: 24),
+      selectedIcon:
+          Icon(selectedIcon, color: theme.colorScheme.primary, size: 24),
       label: label,
     );
   }

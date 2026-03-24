@@ -137,7 +137,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), shape: BoxShape.circle),
+                                  decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
                                   child: Icon(Icons.add_a_photo_rounded, size: 32, color: theme.colorScheme.primary),
                                 ),
                                 const SizedBox(height: 12),
@@ -185,7 +185,7 @@ class _AddComputerPageState extends State<AddComputerPage> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   elevation: 12,
-                  shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                  shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)

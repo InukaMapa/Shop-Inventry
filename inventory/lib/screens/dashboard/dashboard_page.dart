@@ -114,7 +114,7 @@ class _DashboardPageState extends State<DashboardPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              theme.colorScheme.primary.withOpacity(0.03),
+              theme.colorScheme.primary.withValues(alpha: 0.03),
               theme.colorScheme.surface,
             ],
           ),
@@ -153,15 +153,15 @@ class _DashboardPageState extends State<DashboardPage> {
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.colorScheme.errorContainer.withOpacity(0.4),
+        color: theme.colorScheme.errorContainer.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.colorScheme.error.withOpacity(0.1), width: 1.5),
+        border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.1), width: 1.5),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: theme.colorScheme.error.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: theme.colorScheme.error.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error, size: 28),
           ),
           const SizedBox(width: 16),
@@ -171,7 +171,7 @@ class _DashboardPageState extends State<DashboardPage> {
               children: [
                 Text('Low Stock Inventory', style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.error, fontSize: 16)),
                 const SizedBox(height: 2),
-                Text('Only $totalUnits units left in stock. Restock soon.', style: TextStyle(fontSize: 13, color: theme.colorScheme.error.withOpacity(0.8))),
+                Text('Only $totalUnits units left in stock. Restock soon.', style: TextStyle(fontSize: 13, color: theme.colorScheme.error.withValues(alpha: 0.8))),
               ],
             ),
           ),
@@ -185,7 +185,7 @@ class _DashboardPageState extends State<DashboardPage> {
       elevation: 0,
       floating: true,
       pinned: true,
-      backgroundColor: theme.colorScheme.surface.withOpacity(0.9),
+      backgroundColor: theme.colorScheme.surface.withValues(alpha: 0.9),
       scrolledUnderElevation: 0,
       centerTitle: false,
       title: Row(
@@ -205,7 +205,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: theme.colorScheme.primary, letterSpacing: 2),
                 ),
                 Text(
-                  isAdmin ? 'Tech Zone Pro' : 'Tech Zone',
+                  isAdmin ? 'TechZone Pro' : 'TechZone',
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -1, fontSize: 22),
                 ),
@@ -217,7 +217,7 @@ class _DashboardPageState extends State<DashboardPage> {
       actions: [
         Container(
           margin: const EdgeInsets.only(right: 16),
-          decoration: BoxDecoration(color: theme.colorScheme.errorContainer.withOpacity(0.3), shape: BoxShape.circle),
+          decoration: BoxDecoration(color: theme.colorScheme.errorContainer.withValues(alpha: 0.3), shape: BoxShape.circle),
           child: IconButton(
             icon: const Icon(Icons.logout_rounded, size: 22),
             color: theme.colorScheme.error,
@@ -315,23 +315,23 @@ class _DashboardPageState extends State<DashboardPage> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(color: Colors.grey.shade50),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
                 ),
                 child: Row(
                   children: [
                     Container(
                       width: 54, height: 54,
-                      decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.05), borderRadius: BorderRadius.circular(16)),
+                      decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(16)),
                       child: (a['image_url'] != null && a['image_url'].toString().isNotEmpty) 
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(16), 
                             child: Image.network(
                               a['image_url'], 
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, size: 24, color: theme.colorScheme.primary.withOpacity(0.3)),
+                              errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, size: 24, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                             ),
                           ) 
-                        : Icon(Icons.dns_rounded, size: 24, color: theme.colorScheme.primary.withOpacity(0.3)),
+                        : Icon(Icons.dns_rounded, size: 24, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                     ),
                     const SizedBox(width: 16),
                     Expanded(child: Column(
@@ -502,13 +502,13 @@ class _DashboardPageState extends State<DashboardPage> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.grey.shade50),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10)],
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(color: statusColor.withOpacity(0.1), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: statusColor.withValues(alpha: 0.1), shape: BoxShape.circle),
                     child: Icon(Icons.receipt_rounded, color: statusColor, size: 24),
                   ),
                   const SizedBox(width: 16),
@@ -603,11 +603,11 @@ class _AdminActionTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.04),
+          color: color.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: color.withOpacity(0.15), width: 1.5),
+          border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.01), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
@@ -619,7 +619,7 @@ class _AdminActionTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
-                boxShadow: [BoxShadow(color: color.withOpacity(0.1), blurRadius: 10)]
+                boxShadow: [BoxShadow(color: color.withValues(alpha: 0.1), blurRadius: 10)]
               ),
               child: Icon(icon, color: color, size: 28),
             ),
@@ -635,7 +635,7 @@ class _AdminActionTile extends StatelessWidget {
               subtitle, 
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: color.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.w700)
+              style: TextStyle(color: color.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w700)
             ),
           ],
         ),
@@ -661,7 +661,7 @@ class _GreetingCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(36),
         boxShadow: [
-          BoxShadow(color: theme.colorScheme.primary.withOpacity(0.35), blurRadius: 25, offset: const Offset(0, 12)),
+          BoxShadow(color: theme.colorScheme.primary.withValues(alpha: 0.35), blurRadius: 25, offset: const Offset(0, 12)),
         ],
       ),
       child: Column(
@@ -669,13 +669,13 @@ class _GreetingCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(20)),
             child: const Text('PREMIUM ACCESS', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
           ),
           const SizedBox(height: 20),
           const Text('Welcome Back', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1)),
           const SizedBox(height: 8),
-          Text('Your personalized inventory hub is ready.', style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 16, fontWeight: FontWeight.w500)),
+          Text('Your personalized inventory hub is ready.', style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 16, fontWeight: FontWeight.w500)),
         ],
       ),
     );
@@ -702,13 +702,13 @@ class _DashboardCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(32),
           border: Border.all(color: Colors.grey.shade100, width: 2),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 8))],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(24)),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(24)),
               child: Icon(icon, color: color, size: 32),
             ),
             const SizedBox(width: 20),
@@ -746,8 +746,8 @@ class _CategoryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: color.withOpacity(0.1), width: 1.5),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 1.5),
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(32),
@@ -761,12 +761,12 @@ class _CategoryCard extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: color.withValues(alpha: 0.12), shape: BoxShape.circle),
                 child: Icon(icon, color: color, size: 28),
               ),
               const Spacer(),
               Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: -0.5)),
-              Text('Products', style: TextStyle(color: color.withOpacity(0.5), fontSize: 11, fontWeight: FontWeight.w800)),
+              Text('Products', style: TextStyle(color: color.withValues(alpha: 0.5), fontSize: 11, fontWeight: FontWeight.w800)),
             ],
           ),
         ),

@@ -36,7 +36,7 @@ class _ComputerDetailsPageState extends State<ComputerDetailsPage> {
                 leading: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CircleAvatar(
-                    backgroundColor: Colors.white.withOpacity(0.9),
+                    backgroundColor: Colors.white.withValues(alpha: 0.9),
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black, size: 18),
                       onPressed: () => Navigator.pop(context),
@@ -53,9 +53,9 @@ class _ComputerDetailsPageState extends State<ComputerDetailsPage> {
                           ? Image.network(
                               imageUrl, 
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)),
+                              errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.2)),
                             )
-                          : Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)),
+                          : Icon(Icons.dns_rounded, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.2)),
                     ),
                   ),
                 ),
@@ -156,7 +156,7 @@ class _ComputerDetailsPageState extends State<ComputerDetailsPage> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   elevation: 12,
-                  shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                  shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                 ),
                 onPressed: () {
                    CartProvider().addToCart(widget.computer, quantity: _quantity);
@@ -195,7 +195,7 @@ class _ComputerDetailsPageState extends State<ComputerDetailsPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
         ),
         child: Icon(icon, size: 20),
       ),
@@ -212,7 +212,7 @@ class _ComputerDetailsPageState extends State<ComputerDetailsPage> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
       child: Text(
         status,
         style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13),

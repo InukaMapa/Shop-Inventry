@@ -32,11 +32,11 @@ class ProfilePage extends StatelessWidget {
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: theme.colorScheme.primary.withOpacity(0.1), width: 4),
+                      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1), width: 4),
                     ),
                     child: CircleAvatar(
                       radius: 54,
-                      backgroundColor: theme.colorScheme.primary.withOpacity(0.05),
+                      backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.05),
                       child: Icon(Icons.person_rounded, size: 54, color: theme.colorScheme.primary),
                     ),
                   ),
@@ -69,11 +69,11 @@ class ProfilePage extends StatelessWidget {
               height: 64,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.withOpacity(0.05),
+                  backgroundColor: Colors.red.withValues(alpha: 0.05),
                   foregroundColor: Colors.redAccent,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   elevation: 0,
-                  side: BorderSide(color: Colors.red.withOpacity(0.1)),
+                  side: BorderSide(color: Colors.red.withValues(alpha: 0.1)),
                 ),
                 onPressed: () async {
                   await supabase.auth.signOut();

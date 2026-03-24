@@ -55,7 +55,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             onPressed: _showAddCategoryDialog,
             icon: Container(
               padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: Icon(Icons.add_rounded, color: theme.colorScheme.primary, size: 20),
             ),
           ),
@@ -153,15 +153,17 @@ class _CategoriesPageState extends State<CategoriesPage> {
             style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
             onPressed: () async {
               if (controller.text.isNotEmpty) {
+                final messenger = ScaffoldMessenger.of(context);
+                final navigator = Navigator.of(context);
                 try {
                   await _dbService.addCategory(controller.text, iconName: 'category_rounded', colorHex: 'FF607D8B');
                   if (mounted) {
-                    Navigator.pop(context);
+                    navigator.pop();
                     _fetchCategories();
                   }
                 } catch (e) {
                    if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to add category: $e')));
+                    messenger.showSnackBar(SnackBar(content: Text('Failed to add category: $e')));
                   }
                 }
               }
@@ -190,16 +192,16 @@ class _CategoryTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: color.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: color.withOpacity(0.15), width: 1.5),
+          border: Border.all(color: color.withValues(alpha: 0.15), width: 1.5),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: color.withOpacity(0.15), shape: BoxShape.circle),
+              decoration: BoxDecoration(color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 36),
             ),
             const SizedBox(height: 16),

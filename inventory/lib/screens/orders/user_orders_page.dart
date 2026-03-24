@@ -51,11 +51,11 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 100, color: theme.colorScheme.primary.withOpacity(0.1)),
+          Icon(Icons.receipt_long_outlined, size: 100, color: theme.colorScheme.primary.withValues(alpha: 0.1)),
           const SizedBox(height: 24),
           const Text('No orders yet', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          Text('Complete your shopping and track your orders here', style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5))),
+          Text('Complete your shopping and track your orders here', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
         ],
       ),
     );
@@ -69,8 +69,8 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.1)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 15, offset: const Offset(0, 5))],
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.1)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +78,7 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Row(
@@ -87,13 +87,13 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Order ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withOpacity(0.6))),
+                    Text('Order ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
                     Text(order.id, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16)),
                   ],
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
                   child: Text(order.status, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
                 ),
               ],
@@ -106,9 +106,9 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.calendar_today_rounded, size: 16, color: theme.colorScheme.primary.withOpacity(0.6)),
+                    Icon(Icons.calendar_today_rounded, size: 16, color: theme.colorScheme.primary.withValues(alpha: 0.6)),
                     const SizedBox(width: 8),
-                    Text(dateFormat.format(order.date), style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5), fontSize: 13)),
+                    Text(dateFormat.format(order.date), style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.5), fontSize: 13)),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -130,7 +130,7 @@ class _UserOrdersPageState extends State<UserOrdersPage> {
                           width: 44,
                           height: 44,
                           decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withOpacity(0.05),
+                            color: theme.colorScheme.primary.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           clipBehavior: Clip.antiAlias,

@@ -167,7 +167,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
-                    shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                    shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                     elevation: 12,
                   ),
                   child: _isLoading

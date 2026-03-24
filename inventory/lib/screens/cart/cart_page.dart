@@ -32,7 +32,7 @@ class _CartPageState extends State<CartPage> {
             IconButton(
               icon: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
                 child: const Icon(Icons.delete_sweep_rounded, color: Colors.redAccent, size: 20),
               ),
               onPressed: () => setState(() => cart.clearCart()),
@@ -67,8 +67,8 @@ class _CartPageState extends State<CartPage> {
         children: [
            Container(
              padding: const EdgeInsets.all(32),
-             decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.05), shape: BoxShape.circle),
-             child: Icon(Icons.shopping_basket_outlined, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)),
+             decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.05), shape: BoxShape.circle),
+             child: Icon(Icons.shopping_basket_outlined, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.2)),
            ),
           const SizedBox(height: 32),
           Text('Basket is empty', style: GoogleFonts.outfit(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
@@ -100,7 +100,7 @@ class _CartPageState extends State<CartPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 8))],
       ),
       child: Row(
         children: [
@@ -115,10 +115,10 @@ class _CartPageState extends State<CartPage> {
                     child: Image.network(
                       item.computer['image_url'], 
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3)),
+                      errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                     ),
                   )
-                : Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3)),
+                : Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
           ),
           const SizedBox(width: 16),
           // 📝 Item Info
@@ -154,7 +154,7 @@ class _CartPageState extends State<CartPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 40, offset: const Offset(0, -10))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 40, offset: const Offset(0, -10))],
       ),
       child: SafeArea(
         child: Column(
@@ -176,7 +176,7 @@ class _CartPageState extends State<CartPage> {
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   elevation: 12,
-                  shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                  shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                 ),
                 onPressed: () => _showPlaceOrderForm(),
                 child: const Text('Complete Transaction', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
@@ -189,6 +189,9 @@ class _CartPageState extends State<CartPage> {
   }
 
   void _showPlaceOrderForm() {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -206,7 +209,11 @@ class _CartPageState extends State<CartPage> {
           cart.clearCart();
         });
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Order placed successfully!'), behavior: SnackBarBehavior.floating, backgroundColor: Theme.of(context).colorScheme.primary));
+        scaffoldMessenger.showSnackBar(SnackBar(
+          content: const Text('Order placed successfully!'), 
+          behavior: SnackBarBehavior.floating, 
+          backgroundColor: primaryColor
+        ));
       }),
     );
   }

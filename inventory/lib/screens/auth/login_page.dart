@@ -19,6 +19,23 @@ class _LoginPageState extends State<LoginPage> {
 
   final AuthService _authService = AuthService();
 
+  String _parseError(dynamic e) {
+    final msg = e.toString().toLowerCase();
+    if (msg.contains('invalid login credentials') || msg.contains('invalid_credentials')) {
+      return 'Incorrect email or password. Please try again.';
+    }
+    if (msg.contains('email not confirmed')) {
+      return 'Please verify your email before logging in.';
+    }
+    if (msg.contains('network') || msg.contains('socket') || msg.contains('connection') || msg.contains('timeout')) {
+      return 'Network error. Please check your internet connection.';
+    }
+    if (msg.contains('user not found')) {
+      return 'No account found with this email.';
+    }
+    return 'Login failed. Please try again.';
+  }
+
   Future<void> _login() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -29,15 +46,23 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
     try {
-      await _authService.signIn(
+      final response = await _authService.signIn(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
+      if (response.user == null) {
+        throw Exception('Login failed: no user returned.');
+      }
       if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+          SnackBar(
+            content: Text(_parseError(e)),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
         );
       }
     } finally {
@@ -130,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
-                    shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                    shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                     elevation: 12,
                   ),
                   child: _isLoading

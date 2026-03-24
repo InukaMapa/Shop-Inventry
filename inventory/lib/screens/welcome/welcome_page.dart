@@ -29,7 +29,7 @@ class _WelcomePageState extends State<WelcomePage> {
               width: 300,
               height: 300,
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.08),
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
             ).animate().scale(duration: 2.seconds, curve: Curves.easeOut),
@@ -41,7 +41,7 @@ class _WelcomePageState extends State<WelcomePage> {
               width: 200,
               height: 200,
               decoration: BoxDecoration(
-                color: theme.colorScheme.secondary.withOpacity(0.05),
+                color: theme.colorScheme.secondary.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
             ).animate().scale(duration: 2.seconds, delay: 500.ms, curve: Curves.easeOut),
@@ -68,7 +68,7 @@ class _WelcomePageState extends State<WelcomePage> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(28),
                               boxShadow: [
-                                BoxShadow(color: theme.colorScheme.primary.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8)),
+                                BoxShadow(color: theme.colorScheme.primary.withValues(alpha: 0.3), blurRadius: 20, offset: const Offset(0, 8)),
                               ],
                             ),
                             child: ClipRRect(
@@ -78,7 +78,7 @@ class _WelcomePageState extends State<WelcomePage> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) => Container(
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withOpacity(0.8)]),
+                                    gradient: LinearGradient(colors: [theme.colorScheme.primary, theme.colorScheme.primary.withValues(alpha: 0.8)]),
                                   ),
                                   child: const Icon(Icons.shopping_bag_rounded, color: Colors.white, size: 48),
                                 ),
@@ -104,7 +104,7 @@ class _WelcomePageState extends State<WelcomePage> {
                               const SizedBox(width: 8),
                               Padding(
                                 padding: const EdgeInsets.only(top: 24),
-                                child: Icon(Icons.shopping_bag_rounded, size: 40, color: theme.colorScheme.primary.withOpacity(0.5)),
+                                child: Icon(Icons.shopping_bag_rounded, size: 40, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
                               ),
                             ],
                           ).animate().fadeIn(delay: 400.ms).slideX(begin: -0.1),
@@ -133,7 +133,7 @@ class _WelcomePageState extends State<WelcomePage> {
                                 backgroundColor: theme.colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 12,
-                                shadowColor: theme.colorScheme.primary.withOpacity(0.4),
+                                shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                               ),
                               child: const Row(

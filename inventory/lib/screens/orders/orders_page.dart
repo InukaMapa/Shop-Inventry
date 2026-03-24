@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../services/database_service.dart';
 
@@ -91,7 +90,7 @@ class _OrdersPageState extends State<OrdersPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 8))],
                   ),
                   child: ExpansionTile(
                     shape: const RoundedRectangleBorder(side: BorderSide.none),
@@ -123,13 +122,13 @@ class _OrdersPageState extends State<OrdersPage> {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: theme.colorScheme.primary.withOpacity(0.05),
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.05),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       clipBehavior: Clip.antiAlias,
                                       child: imgUrl != null && imgUrl.isNotEmpty
                                           ? Image.network(imgUrl, fit: BoxFit.cover)
-                                          : Icon(Icons.dns_rounded, size: 18, color: theme.colorScheme.primary.withOpacity(0.3)),
+                                          : Icon(Icons.dns_rounded, size: 18, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
@@ -208,7 +207,7 @@ class _OrdersPageState extends State<OrdersPage> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
       child: Text(status, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
@@ -218,7 +217,7 @@ class _OrdersPageState extends State<OrdersPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_rounded, size: 80, color: theme.colorScheme.primary.withOpacity(0.2)),
+          Icon(Icons.receipt_long_rounded, size: 80, color: theme.colorScheme.primary.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           const Text('Orders History', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           Text('No orders found in database', style: TextStyle(color: Colors.grey.shade600)),

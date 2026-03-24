@@ -90,9 +90,11 @@ class _ComputerListPageState extends State<ComputerListPage> {
       await _dbService.deleteComputer(id);
       _fetchComputers();
     } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deletion failed'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.redAccent),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Deletion failed'), behavior: SnackBarBehavior.floating, backgroundColor: Colors.redAccent),
+        );
+      }
     }
   }
 
@@ -128,7 +130,7 @@ class _ComputerListPageState extends State<ComputerListPage> {
                 IconButton(
                   icon: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: theme.colorScheme.primary.withOpacity(0.1), shape: BoxShape.circle),
+                    decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
                     child: Icon(Icons.add_rounded, color: theme.colorScheme.primary),
                   ),
                   onPressed: () {
@@ -243,7 +245,7 @@ class _AssetCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -271,9 +273,9 @@ class _AssetCard extends StatelessWidget {
                       ? Image.network(
                           imageUrl, 
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3), size: 32),
+                          errorBuilder: (context, error, stackTrace) => Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.3), size: 32),
                         )
-                      : Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withOpacity(0.3), size: 32),
+                      : Icon(Icons.dns_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.3), size: 32),
                 ),
               ),
               const SizedBox(width: 16),
@@ -362,7 +364,7 @@ class _AssetCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
       child: Text(
         status ?? 'N/A',
         style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 10),

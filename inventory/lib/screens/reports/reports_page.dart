@@ -101,11 +101,11 @@ class ReportsPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(32),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 30, offset: const Offset(0, 15))],
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 30, offset: const Offset(0, 15))],
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [color, color.withOpacity(0.8)],
+          colors: [color, color.withValues(alpha: 0.8)],
         ),
       ),
       child: Column(
@@ -113,7 +113,7 @@ class ReportsPage extends StatelessWidget {
         children: [
           Container(
              padding: const EdgeInsets.all(12),
-             decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(16)),
+             decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(16)),
              child: Icon(icon, color: Colors.white, size: 28),
           ),
           const SizedBox(height: 24),
@@ -132,7 +132,7 @@ class ReportsPage extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.grey.shade100),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
