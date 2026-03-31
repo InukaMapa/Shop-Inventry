@@ -56,7 +56,9 @@ class _AddComputerPageState extends State<AddComputerPage> {
     final fileName = 'asset_${DateTime.now().millisecondsSinceEpoch}.jpg';
     try {
       final supabase = Supabase.instance.client;
-      await supabase.storage.from('computer-images').upload(fileName, _imageFile!, fileOptions: const FileOptions(upsert: true));
+      await supabase.storage.from('computer-images').upload(
+          fileName, _imageFile!,
+          fileOptions: const FileOptions(upsert: true));
       return supabase.storage.from('computer-images').getPublicUrl(fileName);
     } catch (e) {
       return null;
@@ -64,8 +66,12 @@ class _AddComputerPageState extends State<AddComputerPage> {
   }
 
   Future<void> _addAsset() async {
-    if (_titleController.text.isEmpty || _priceController.text.isEmpty || _assetTagController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Required fields: Title, Price, Asset Tag'), behavior: SnackBarBehavior.floating));
+    if (_titleController.text.isEmpty ||
+        _priceController.text.isEmpty ||
+        _assetTagController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Required fields: Title, Price, Asset Tag'),
+          behavior: SnackBarBehavior.floating));
       return;
     }
 
@@ -90,10 +96,17 @@ class _AddComputerPageState extends State<AddComputerPage> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Inventory updated!'), backgroundColor: Colors.green, behavior: SnackBarBehavior.floating));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Inventory updated!'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating));
       Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating));
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -102,11 +115,13 @@ class _AddComputerPageState extends State<AddComputerPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(widget.computer != null ? 'Edit Equipment' : 'New Equipment', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+        title: Text(
+            widget.computer != null ? 'Edit Equipment' : 'New Equipment',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
         backgroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
@@ -128,20 +143,34 @@ class _AddComputerPageState extends State<AddComputerPage> {
                   border: Border.all(color: Colors.grey.shade100, width: 2),
                 ),
                 child: _imageFile != null
-                    ? ClipRRect(borderRadius: BorderRadius.circular(32), child: Image.file(_imageFile!, fit: BoxFit.cover))
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(32),
+                        child: Image.file(_imageFile!, fit: BoxFit.cover))
                     : _existingImageUrl != null
-                        ? ClipRRect(borderRadius: BorderRadius.circular(32), child: Image.network(_existingImageUrl!, fit: BoxFit.cover))
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(32),
+                            child: Image.network(_existingImageUrl!,
+                                fit: BoxFit.cover))
                         : Center(
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
-                                  child: Icon(Icons.add_a_photo_rounded, size: 32, color: theme.colorScheme.primary),
+                                  decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.1),
+                                      shape: BoxShape.circle),
+                                  child: Icon(Icons.add_a_photo_rounded,
+                                      size: 32,
+                                      color: theme.colorScheme.primary),
                                 ),
                                 const SizedBox(height: 12),
-                                Text('Upload Product Image', style: TextStyle(color: Colors.grey.shade400, fontSize: 13, fontWeight: FontWeight.w800)),
+                                Text('Upload Product Image',
+                                    style: TextStyle(
+                                        color: Colors.grey.shade400,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w800)),
                               ],
                             ),
                           ),
@@ -152,26 +181,45 @@ class _AddComputerPageState extends State<AddComputerPage> {
             _sectionTitle('Core Information'),
             const SizedBox(height: 20),
             _field(_titleController, 'Product Title', Icons.title_rounded),
-            _field(_descriptionController, 'Short Description', Icons.description_rounded, maxLines: 2),
-            _field(_assetTagController, 'Reference Tag / ID', Icons.qr_code_scanner_rounded),
+            _field(_descriptionController, 'Short Description',
+                Icons.description_rounded,
+                maxLines: 2),
+            _field(_assetTagController, 'Reference Tag / ID',
+                Icons.qr_code_scanner_rounded),
 
             const SizedBox(height: 32),
             _sectionTitle('Inventory & Pricing'),
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(child: _field(_priceController, 'Price (Rs.)', Icons.payments_rounded, keyboardType: TextInputType.number)),
+                Expanded(
+                    child: _field(
+                        _priceController, 'Price (Rs.)', Icons.payments_rounded,
+                        keyboardType: TextInputType.number)),
                 const SizedBox(width: 20),
-                Expanded(child: _field(_quantityController, 'In Stock', Icons.inventory_2_rounded, keyboardType: TextInputType.number)),
+                Expanded(
+                    child: _field(_quantityController, 'In Stock',
+                        Icons.inventory_2_rounded,
+                        keyboardType: TextInputType.number)),
               ],
             ),
 
             const SizedBox(height: 32),
             _sectionTitle('Status & Classification'),
             const SizedBox(height: 20),
-            _dropdown('Product Status', Icons.info_outline_rounded, _status, ['Available', 'In Use', 'Maintenance', 'Out of Stock'], (v) => setState(() => _status = v!)),
+            _dropdown(
+                'Product Status',
+                Icons.info_outline_rounded,
+                _status,
+                ['Available', 'In Use', 'Maintenance', 'Out of Stock'],
+                (v) => setState(() => _status = v!)),
             const SizedBox(height: 20),
-            _dropdown('Inventory Category', Icons.category_rounded, _category, ['Desktops', 'Laptops', 'Accessories'], (v) => setState(() => _category = v!)),
+            _dropdown(
+                'Inventory Category',
+                Icons.category_rounded,
+                _category,
+                ['Desktops', 'Laptops', 'Accessories'],
+                (v) => setState(() => _category = v!)),
 
             const SizedBox(height: 60),
 
@@ -183,13 +231,19 @@ class _AddComputerPageState extends State<AddComputerPage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.colorScheme.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24)),
                   elevation: 12,
                   shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : Text(widget.computer != null ? 'Apply Changes' : 'Register Equipment', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+                    : Text(
+                        widget.computer != null
+                            ? 'Apply Changes'
+                            : 'Register Equipment',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w900)),
               ),
             ).animate().scale(delay: 400.ms),
             const SizedBox(height: 60),
@@ -200,16 +254,23 @@ class _AddComputerPageState extends State<AddComputerPage> {
   }
 
   Widget _sectionTitle(String title) {
-    return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black));
+    return Text(title,
+        style: GoogleFonts.outfit(
+            fontSize: 18, fontWeight: FontWeight.w800, color: Colors.black));
   }
 
-  Widget _field(TextEditingController controller, String label, IconData icon, {TextInputType? keyboardType, int maxLines = 1}) {
+  Widget _field(TextEditingController controller, String label, IconData icon,
+      {TextInputType? keyboardType, int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade400, fontWeight: FontWeight.w800)),
+          Text(label,
+              style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
@@ -220,7 +281,9 @@ class _AddComputerPageState extends State<AddComputerPage> {
               contentPadding: const EdgeInsets.all(20),
               filled: true,
               fillColor: Colors.grey.shade50,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none),
             ),
           ),
         ],
@@ -228,25 +291,36 @@ class _AddComputerPageState extends State<AddComputerPage> {
     );
   }
 
-  Widget _dropdown(String label, IconData icon, String value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _dropdown(String label, IconData icon, String value,
+      List<String> items, ValueChanged<String?> onChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey.shade400, fontWeight: FontWeight.w800)),
+        Text(label,
+            style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade400,
+                fontWeight: FontWeight.w800)),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           initialValue: value,
-          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontWeight: FontWeight.w700)))).toList(),
+          items: items
+              .map((e) => DropdownMenuItem(
+                  value: e,
+                  child: Text(e,
+                      style: const TextStyle(fontWeight: FontWeight.w700))))
+              .toList(),
           onChanged: onChanged,
           decoration: InputDecoration(
             prefixIcon: Icon(icon, size: 20),
             filled: true,
             fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none),
           ),
         ),
       ],
     );
   }
 }
-

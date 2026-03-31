@@ -1,0 +1,51 @@
+﻿Running Gradle task 'assembleDebug'...                          
+flutter : Warning: Flutter 
+support for your project's 
+Kotlin version (1.9.22) will 
+soon be dropped. Please 
+upgrade your Kotlin version 
+to a version of at least 
+2.1.0 soon.
+At line:1 char:1
++ flutter build apk --debug 
+--no-color 2>&1 | Out-File 
+-FilePath "build ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Warning  
+  : Flutte...ast 2.1.0 soo   
+ n.:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+Alternatively, use the flag "
+--android-skip-build-dependen
+cy-validation" to bypass 
+this check.
+
+Potential fix: Your 
+project's KGP version is 
+typically defined in the 
+plugins block of the 
+`settings.gradle` file (D:\Ca
+mpus\GitHub\Shop-Inventry\inv
+entory\android/settings.gradl
+e), by a plugin with the id 
+of org.jetbrains.kotlin.andro
+id. 
+If you don't see a plugins 
+block, your project was 
+likely created with an older 
+template version, in which 
+case it is most likely 
+defined in the top-level 
+build.gradle file (D:\Campus\
+GitHub\Shop-Inventry\inventor
+y\android/build.gradle) by 
+the ext.kotlin_version 
+property.
+
+Running Gradle task 'assembleDebug'...                            141.7s
+ΓêÜ Built build\app\outputs\flutter-apk\app-debug.apk

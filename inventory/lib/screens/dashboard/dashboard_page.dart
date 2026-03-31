@@ -298,21 +298,21 @@ class _DashboardPageState extends State<DashboardPage> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             physics: const BouncingScrollPhysics(),
-            children: [
+            children: const [
               _CategoryCard(
                   icon: Icons.desktop_windows_rounded,
                   title: 'Desktops',
-                  color: const Color(0xFF6366F1),
+                  color: Color(0xFF6366F1),
                   delayMs: 400),
               _CategoryCard(
                   icon: Icons.laptop_rounded,
                   title: 'Laptops',
-                  color: const Color(0xFF14B8A6),
+                  color: Color(0xFF14B8A6),
                   delayMs: 500),
               _CategoryCard(
                   icon: Icons.keyboard_rounded,
                   title: 'Accessories',
-                  color: const Color(0xFFF59E0B),
+                  color: Color(0xFFF59E0B),
                   delayMs: 600),
             ],
           ),

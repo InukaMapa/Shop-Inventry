@@ -1,0 +1,130 @@
+﻿Launching lib\main.dart on sdk gphone64 x86 64 in debug mode...
+Running Gradle task 'assembleDebug'...                          
+flutter : Warning: Flutter 
+support for your project's 
+Kotlin version (1.9.22) will 
+soon be dropped. Please 
+upgrade your Kotlin version 
+to a version of at least 
+2.1.0 soon.
+At line:1 char:13
++ chcp 65001; flutter run -d 
+emulator-5554 --no-color 
+2>&1 | Out-File - ...
++             ~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified: (Warning  
+  : Flutte...ast 2.1.0 soo   
+ n.:String) [], RemoteExc    
+eption
+    + FullyQualifiedErrorId  
+   : NativeCommandError
+ 
+Alternatively, use the flag "
+--android-skip-build-dependen
+cy-validation" to bypass 
+this check.
+
+Potential fix: Your 
+project's KGP version is 
+typically defined in the 
+plugins block of the 
+`settings.gradle` file (D:\Ca
+mpus\GitHub\Shop-Inventry\inv
+entory\android/settings.gradl
+e), by a plugin with the id 
+of org.jetbrains.kotlin.andro
+id. 
+If you don't see a plugins 
+block, your project was 
+likely created with an older 
+template version, in which 
+case it is most likely 
+defined in the top-level 
+build.gradle file (D:\Campus\
+GitHub\Shop-Inventry\inventor
+y\android/build.gradle) by 
+the ext.kotlin_version 
+property.
+
+Running Gradle task 'assembleDebug'...                             62.4s
+ΓêÜ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...           6.5s
+D/FlutterJNI(16521): Beginning load of flutter...
+D/FlutterJNI(16521): flutter (null) was loaded normally!
+I/flutter (16521): [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+Syncing files to device sdk gphone64 x86 64...                     317ms
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on sdk gphone64 x86 64 is available at: http://127.0.0.1:5096/GjTd522rIuA=/
+The Flutter DevTools debugger and profiler on sdk gphone64 x86 64 is available at: http://127.0.0.1:5096/GjTd522rIuA=/devtools/?uri=ws://127.0.0.1:5096/GjTd522rIuA=/ws
+I/flutter (16521): supabase.supabase_flutter: INFO: ***** Supabase init completed ***** 
+D/ProfileInstaller(16521): Installing profile for com.example.inventory
+I/Choreographer(16521): Skipped 447 frames!  The application may be doing too much work on its main thread.
+I/WindowExtensionsImpl(16521): Initializing Window Extensions, vendor API level=9, activity embedding enabled=true
+I/ample.inventory(16521): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+I/Choreographer(16521): Skipped 454 frames!  The application may be doing too much work on its main thread.
+D/WindowLayoutComponentImpl(16521): Register WindowLayoutInfoListener on Context=com.example.inventory.MainActivity@61a6cbf, of which baseContext=android.app.ContextImpl@debcb51
+D/VRI[MainActivity](16521): visibilityChanged oldVisibility=true newVisibility=false
+D/InsetsController(16521): hide(ime(), fromIme=false)
+I/ImeTracker(16521): com.example.inventory:b79e8e: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+I/ample.inventory(16521): AssetManager2(0x79ac39871318) locale list changing from [] to [en-US]
+I/ImeTracker(16521): com.example.inventory:67ba4ad: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16521): show(ime(), fromIme=false)
+D/InsetsController(16521): Setting requestedVisibleTypes to -1 (was -9)
+D/InputConnectionAdaptor(16521): The input method toggled cursor monitoring on
+I/AssistStructure(16521): Flattened final assist data: 504 bytes, containing 1 windows, 3 views
+I/ImeTracker(16521): com.example.inventory:8036898e: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16521): show(ime(), fromIme=false)
+I/ImeTracker(16521): com.example.inventory:8036898e: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+I/AssistStructure(16521): Flattened final assist data: 488 bytes, containing 1 windows, 3 views
+D/InputConnectionAdaptor(16521): The input method toggled cursor monitoring on
+I/ImeTracker(16521): com.example.inventory:6d3d9431: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(16521): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(16521): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@81319fa
+D/InsetsController(16521): Setting requestedVisibleTypes to -9 (was -1)
+D/CompatChangeReporter(16521): Compat change id reported: 395521150; UID 10217; state: ENABLED
+W/WindowOnBackDispatcher(16521): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@76d4631
+I/ImeTracker(16521): com.example.inventory:b8240fa7: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16521): show(ime(), fromIme=false)
+D/InsetsController(16521): Setting requestedVisibleTypes to -1 (was -9)
+D/InputConnectionAdaptor(16521): The input method toggled cursor monitoring on
+I/AssistStructure(16521): Flattened final assist data: 520 bytes, containing 1 windows, 3 views
+W/WindowOnBackDispatcher(16521): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@81319fa
+W/RemoteInputConnectionImpl(16521): setImeConsumesInput on inactive InputConnection
+W/RemoteInputConnectionImpl(16521): requestCursorUpdates on inactive InputConnection
+E/ImeBackDispatcher(16521): Ime callback not found. Ignoring unregisterReceivedCallback. callbackId: 191025018
+D/VRI[MainActivity](16521): visibilityChanged oldVisibility=true newVisibility=false
+I/AutofillManager(16521): onInvisibleForAutofill(): expiringResponse
+D/ViewRootImpl(16521): Skipping stats log for color mode
+D/InsetsController(16521): hide(ime(), fromIme=false)
+D/InsetsController(16521): Setting requestedVisibleTypes to -9 (was -1)
+W/WindowOnBackDispatcher(16521): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@81319fa
+W/HWUI    (16521): Image decoding logging dropped!
+W/HWUI    (16521): Image decoding logging dropped!
+W/HWUI    (16521): Image decoding logging dropped!
+W/HWUI    (16521): Image decoding logging dropped!
+D/InputConnectionAdaptor(16521): The input method toggled cursor monitoring on
+D/InsetsController(16521): show(ime(), fromIme=false)
+D/InsetsController(16521): Setting requestedVisibleTypes to -1 (was -9)
+D/InsetsController(16521): show(ime(), fromIme=false)
+I/ImeTracker(16521): com.google.android.inputmethod.latin:562155f7: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(16521): com.example.inventory:fe66f73: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16521): show(ime(), fromIme=false)
+I/ImeTracker(16521): com.example.inventory:fe66f73: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(16521): com.example.inventory:99a300a3: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+D/InsetsController(16521): show(ime(), fromIme=false)
+I/ImeTracker(16521): com.example.inventory:99a300a3: onCancelled at PHASE_CLIENT_REPORT_REQUESTED_VISIBLE_TYPES
+I/ImeTracker(16521): com.example.inventory:fa9b1222: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+D/InsetsController(16521): hide(ime(), fromIme=false)
+W/WindowOnBackDispatcher(16521): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@81319fa
+D/InsetsController(16521): Setting requestedVisibleTypes to -9 (was -1)
+W/WindowOnBackDispatcher(16521): sendCancelIfRunning: isInProgress=false callback=io.flutter.embedding.android.FlutterActivity$1@76d4631
